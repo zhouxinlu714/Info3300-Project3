@@ -4,13 +4,35 @@
     <script src="https://d3js.org/d3.v6.min.js"></script>
 </head>
 <style>
+    .gridlines line {
+        stroke: #ccc;
+        stroke-dasharray: 6;
+    }
+
+    .gridlines .domain {
+        stroke: none;
+    }
+    .annotation {
+        font-size: smaller;
+        fill: black;
+    }
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
+    <svg id = "line" height="400" width="800"></svg>
     <script>
+        const linesvg = d3.select("svg#line");
+        const width = linesvg.attr("width");
+        const height = linesvg.attr("height");
+        const margin = {top: 10, right: 10, bottom: 30, left: 60};
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+        let annotations = linesvg.append("g").attr("id","annotations");
+        let chartArea = linesvg.append("g").attr("id","points")
+                        .attr("transform",`translate(${margin.left},${margin.top})`);
         const requestData = async function () {
             //import dataset
-            var surveyResult = await d3.csv("survey_results_public.csv");
+            var surveyResult = await d3.csv("survey_results_public.csv", d3.autoType);
             console.log(surveyResult)
 
             //clean dataset 64464=>7362
@@ -29,7 +51,155 @@
                     
             surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA' && d['Salary'] != 'NA' && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA'});
             console.log(surveyResult)
+            // clean data 
+            surveyResult.forEach(d=>{
+                if(d['YearsCodePro']==='More than 50 years') {
+                    d['YearsCodePro'] = 51;
+                }
+                if(d['YearsCodePro']==='Less than 1 year') {
+                    d['YearsCodePro'] = 1;
+                }
+            })
 
+            // update function passing data
+            function updateLinePlot(data) {
+                const yearExtent = d3.extent(data, d => d['YearsCodePro']);
+                const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
+                year_salary = [];
+                for(i=yearExtent[0];i<=yearExtent[1];i++) {
+                    temp = data.filter((d) => { return d['YearsCodePro'] === i});
+                    year_salary[i] = d3.map(temp,d => d.Salary);
+                }
+                year_salary_result = []
+                for(i=yearExtent[0];i<=yearExtent[1];i++) {
+                    year_salary_result.push({"salary":Math.floor(d3.mean(year_salary[i])* 100)/100, "year":i});
+                }  
+                // year_salary_result contains year and average salary at the year
+                console.log(year_salary_result);
+                const salaryExtent = d3.extent(year_salary_result, d => d['salary']);
+                const salaryScale = d3.scaleLinear().domain(salaryExtent).range([chartHeight, 0]);
+                let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
+                let leftAxisG = annotations.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+                    .call(leftAxis);
+                let leftGridlines = d3.axisLeft(salaryScale)
+                        .tickSize(-chartWidth-10)
+                        .tickFormat("")
+                annotations.append("g")
+                            .attr("class", "y gridlines")
+                            .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                            .call(leftGridlines);
+                let bottomAxis = d3.axisBottom(yearScale);
+                let bottomAxisG = annotations.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+                    .call(bottomAxis);
+            
+                var lineGen = d3.line()
+                                .defined(d => !isNaN(d.salary))
+                                .x( d => yearScale(d['year']) )
+                                .y( d => salaryScale(d['salary']) )
+                                .curve(d3.curveMonotoneX);
+                
+                chartArea.append("path")  // line with missing value
+                        .datum(year_salary_result.filter(lineGen.defined()))
+                        .attr("class", "line")
+                        .attr("fill", "none")
+                        .attr("stroke", "grey")
+                        .attr("stroke-width", 3)
+                        .attr("d", lineGen);
+                chartArea.append("path") 
+                        .datum(year_salary_result)
+                        .attr("class", "line")
+                        .attr("fill", "none")
+                        .attr("stroke", "steelblue")
+                        .attr("stroke-width", 3)
+                        .attr("d", lineGen);
+  
+                let mouseGroup = chartArea.append("g");
+                let xMarker = mouseGroup.append("line")
+                    .attr("id","xMarker")
+                    .attr("fill","none")
+                    .attr("stroke","black")
+                    .attr("stroke-width",1)
+                    .attr("y1",0)
+                    .attr("y2",chartHeight)
+                    .attr("visibility","hidden");
+
+                let valueMarker = mouseGroup.append("circle")
+                    .attr("id","valueMarker")
+                    .attr("fill","none")
+                    .attr("stroke","steelblue")
+                    .attr("stroke-width",2)
+                    .attr("r",6)
+                    .attr("visibility","hidden");
+
+                let label = mouseGroup.append("text")
+                    .attr("id","label")
+                    .attr("visibility","hidden");
+                let activeRegion = mouseGroup.append("rect")
+                    .attr("id","activeRegion")
+                    .attr("width",chartWidth)
+                    .attr("height",chartHeight)
+                    .attr("fill","none")
+                    .attr("pointer-events","all");
+                    let findDate = d3.bisector( d => d.year ).right;
+
+// activeRegion is now the top-most item (even if invisible), so it should always catch the mouse events and never clash
+                activeRegion.on("mouseover", function() {
+                // Show the marker and label when mousing over
+                    xMarker.attr("visibility","");
+                    valueMarker.attr("visibility","");
+                    label.attr("visibility","");
+                    });
+                    activeRegion.on("mouseout", function() {
+                    // Hide them when mousing out of chart
+                    xMarker.attr("visibility","hidden");
+                    valueMarker.attr("visibility","hidden");
+                    label.attr("visibility","hidden");
+                });
+                activeRegion.on("mousemove", function(evt) {
+                // Update the position as you move
+
+                // Get mouse location
+                    let location = d3.pointer(evt);
+                    let x = location[0];
+                    // Use "invert" on a scale to go from pixels back to data
+                    let xDate = yearScale.invert(x);
+                    // We use the bisector to find the index of the element that's closest to our xDate
+                    let index = findDate(year_salary_result, xDate);
+                    // We can then get d, the data point that's closest
+                    let d = year_salary_result[index];
+
+                    // From there, it's just a matter of updating positions using our scales like we've done for a while now
+                    let xPos = yearScale(d['year']);
+                    let yPos = salaryScale(d['salary']);
+
+                    xMarker.attr("x1",xPos).attr("x2",xPos);
+                    valueMarker.attr("cx",xPos).attr("cy",yPos);
+
+                    let txt = d['salary']
+
+                    // We started with the following line, which has lots of overlaps
+                    // label.attr("x",xPos).attr("y",yPos).text(txt);
+
+                    // Here's a simple way to remove overlaps and deliver a consistent user experience
+                    if(isNaN(yPos)) {
+                        valueMarker.attr("visibility","hidden");
+                    } else {
+                        label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                        valueMarker.attr("visibility","");
+                    }
+                    
+                // if (xPos < chartWidth / 2.0) {
+                //     label.attr("x",xPos+4).attr("y",100).attr("text-anchor","start");
+                // }
+                // else {
+                //     label.attr("x",xPos-4).attr("y",chartHeight-100).attr("text-anchor","end");
+                });
+            }
+            updateLinePlot(surveyResult);
         }
         requestData();
     </script>
