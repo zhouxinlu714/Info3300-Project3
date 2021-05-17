@@ -1,0 +1,37 @@
+<html>
+<head>
+    <title>INFO 3300/5100 - Project 3</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<style>
+</style>
+<body>
+    <h1>US Developer Career Guide</h1>
+    <script>
+        const requestData = async function () {
+            //import dataset
+            var surveyResult = await d3.csv("survey_results_public.csv");
+            console.log(surveyResult)
+
+            //clean dataset 64464=>7362
+            surveyResult = surveyResult.map(function(obj) {
+                    return {
+                        Country: obj.Country,
+                        DevType: obj.DevType,
+                        Gender: obj.Gender,
+                        EdLevel: obj.EdLevel,
+                        LanguageWorkedWith: obj.LanguageWorkedWith,
+                        Salary: obj.ConvertedComp,
+                        YearsCode: obj.YearsCode,
+                        YearsCodePro: obj.YearsCodePro
+                    }
+                    });   
+                    
+            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA' && d['Salary'] != 'NA' && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA'});
+            console.log(surveyResult)
+
+        }
+        requestData();
+    </script>
+</body>
+</html>
