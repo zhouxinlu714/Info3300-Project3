@@ -6,6 +6,7 @@
 <style>
     body{
         font-family: Arial, Helvetica, sans-serif;
+        background-color: white;
     }
 
     .gridlines line {
@@ -23,6 +24,40 @@
     .div container{
         width: 1400px;
         position: relative;
+    }
+
+    button {
+      /* appearance: auto;
+      -webkit-writing-mode: horizontal-tb !important;
+      text-rendering: auto; */
+      display: inline-block;
+      color: white;
+      font-family:'Roboto',sans-serif;
+      padding:0.5em 1.8em;
+      margin:0.1em 0.3em 0.3em 0.1em;
+      border: 2px solid white;
+      border-radius:2em;
+      word-spacing: normal;
+      text-transform: none;
+      text-indent: 0.5px;
+      text-shadow: none;
+      text-align: center;
+      /* align-items: flex-start; */
+      cursor: default;
+      transition: all 0.2s;
+    }
+
+    button:hover{
+      border-color: rgb(126, 126, 126);
+    }
+    button:focus{
+      border-color: black;
+    }
+    @media all and (max-width:30em){
+     button{
+      display:block;
+      margin:0.2em auto;
+     }
     }
 </style>
 <body>
@@ -118,7 +153,7 @@
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
 
-            const roleScale = d3.scaleOrdinal(d3.schemeCategory10);
+            const roleScale = d3.scaleOrdinal(d3.schemeTableau10);
 
             function compute_salary_group (data) {
               Allyear_salary = {};
@@ -148,7 +183,8 @@
             var salary_groups = compute_salary_group (surveyResult);
             console.log("salary_groups", salary_groups);
 
-            let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
+            // let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("$~f"));
+            let leftAxis = d3.axisLeft(salaryScale).tickFormat(function (d) {return "$"+ d/1000 + "K"});
             let leftAxisG = annotations.append("g")
                 .attr("class", "y axis")
                 .attr("transform", `translate(${margin.left - 10},${margin.top})`)
@@ -201,7 +237,7 @@
                         .attr("stroke", roleScale(role))
                         .attr("stroke-width", 3)
                         .attr("d", lineGen);
-                
+
                 chartArea.selectAll("circle").select(".lineCircle")
                     .data(year_salary_result)
                     .enter()
@@ -241,9 +277,9 @@
                     .attr("height",chartHeight)
                     .attr("fill","none")
                     .attr("pointer-events","all");
-                
+
                 var rolename = getRoleName(role);  // get full role name
-                var language_dict = {};  // count LanguageWorkedWith 
+                var language_dict = {};  // count LanguageWorkedWith
                 data.forEach(d=>{
                     entryArray = d.LanguageWorkedWith.split(";");
                     for(i of entryArray){
@@ -325,12 +361,12 @@
                     // From there, it's just a matter of updating positions using our scales like we've done for a while now
                     let xPos = yearGroupScale(d['year_group'])+ yearGroupScale.bandwidth() / 2;
                     let yPos =  salaryScale(d['salary']);
-                    
+
                     xMarker.attr("x1",xPos).attr("x2",xPos);
                     valueMarker.attr("cx",xPos).attr("cy",yPos);
-                    
-                    let txt = d['salary']
-                    
+
+                    let txt = "$" + d['salary']/1000 + "K";
+
                     label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
                     valueMarker.attr("visibility","");
 
@@ -355,48 +391,56 @@
 
             var menuDiv = d3.select("div#button");
             var Button1 = menuDiv.append("button")
+                    .style("background-color", roleScale('backend'))
                     .text("Backend developer")
                     .on('click', function(){
                         updateLinePlot(backend, 'backend');
                         addLinePlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
+                    .style("background-color", roleScale('frontend'))
                     .text("Frontend developer")
                     .on('click', function(){
                         updateLinePlot(frontend, 'frontend');
                         addLinePlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
+                    .style("background-color", roleScale('fullstack'))
                     .text("Fullstack developer")
                     .on('click', function(){
                         updateLinePlot(fullstack, 'fullstack');
                         addLinePlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
+                    .style("background-color", roleScale('dataScientistEngineer'))
                     .text("Data scientist or data engineer")
                     .on('click', function(){
                         updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                         addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
+                    .style("background-color", roleScale('businessAnalyst'))
                     .text("Data or business analyst")
                     .on('click', function(){
                         updateLinePlot(businessAnalyst, 'businessAnalyst');
                         addLinePlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
+                    .style("background-color", roleScale('embedded'))
                     .text("Embedded software engineer")
                     .on('click', function(){
                         updateLinePlot(embedded, 'embedded');
                         addLinePlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
+                    .style("background-color", roleScale('devOps'))
                     .text("DevOps or site reliability engineer")
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
                         addLinePlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
+                    .style("background-color", roleScale('pm'))
                     .text("Product manager")
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
