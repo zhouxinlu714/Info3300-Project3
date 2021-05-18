@@ -59,8 +59,7 @@
                     });
 
              // clean data
-            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA'
-            && d['Salary'] != 'NA' && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA' && d['YearsCodePro'] <= 26 });
+            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA'&& d['Salary'] != 'NA' && d['Salary'] != 0 && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA' });
 
             var backend = [];
             var frontend = [];
@@ -71,13 +70,6 @@
             var devOps = [];
             var pm = [];
             surveyResult.forEach(d=>{
-                // if(d['YearsCodePro']==='More than 50 years') {
-                //     d['YearsCodePro'] = 51;
-                // }
-                if(d['YearsCodePro']==='Less than 1 year') {
-                    d['YearsCodePro'] = 1;
-                }
-
                 //split devtype string
                 d['DevType'] = d['DevType'].split(";");
 
@@ -110,118 +102,111 @@
                 })
             })
             console.log("survey result", surveyResult)
-            console.log("back end", backend)
-            console.log("front end", frontend)
-            console.log("full stack", fullstack)
-            console.log("embedded", embedded)
-            console.log("data scientist", dataScientistEngineer)
-            console.log("business Analyst", businessAnalyst)
-            console.log("devOps", devOps)
-            console.log("pm", pm)
-
 
             //axis
-            const yearExtent = d3.extent(surveyResult, d => d['YearsCodePro']);
-            const yearScale = d3.scaleLinear().domain([0,yearExtent[1]]).range([0, chartWidth]);
+            const yearGroupExtent = ['1-2 years','3-5 years','5-10 years','10-15 years','15-20 years','20+ years'];
+            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]);
 
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
-            const salaryScale = d3.scaleLinear().domain([60000,600000]).range([chartHeight, 0]);
-            // const genSalaryScale = d3.scaleLinear().domain([60000,salaryExtent[1]]).range([chartHeight, 0]);
+            const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
 
-            Allyear_salary = [];
-                for(i=yearExtent[0];i<=yearExtent[1];i++) {
-                    temp = surveyResult.filter((d) => { return d['YearsCodePro'] === i});
-                    Allyear_salary[i] = d3.map(temp,d => d.Salary);
-                }
+            const roleScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-                console.log("Allyear_salary", Allyear_salary)
+            function compute_salary_group (data) {
+              Allyear_salary = {};
+              for(i=0;i<yearGroupExtent.length;i++) {
+                year_group = yearGroupExtent[i];
+                Allyear_salary[year_group] = [];
+              }
 
-                Allyear_salary_result = []
-                for(i=yearExtent[0];i<=yearExtent[1];i++) {
-                    Allyear_salary_result.push({"salary":Math.floor(d3.median(Allyear_salary[i])* 100)/100, "year":i});
-                }
-                console.log(Allyear_salary_result);
-                // const salaryExtent = d3.extent(Allyear_salary_result, d => d['salary']);
-                // console.log("salary extent", salaryExtent)
-                // const salaryScale = d3.scaleLinear().domain([60000,salaryExtent[1]]).range([chartHeight, 0]);
+              data.forEach((d, i) => {
+                if (d['YearsCodePro']===1 || d['YearsCodePro']===2) {
+                    Allyear_salary['1-2 years'].push(d.Salary);
+                } else if (d['YearsCodePro']>=3 && d['YearsCodePro']<=5) {
+                    Allyear_salary['3-5 years'].push(d.Salary);
+                } else if (d['YearsCodePro']>5 && d['YearsCodePro']<=10) {
+                    Allyear_salary['5-10 years'].push(d.Salary);
+                } else if (d['YearsCodePro']>10 && d['YearsCodePro']<=15) {
+                    Allyear_salary['10-15 years'].push(d.Salary);
+                } else if (d['YearsCodePro']>15 && d['YearsCodePro']<=20) {
+                    Allyear_salary['15-20 years'].push(d.Salary);
+                } else if (d['YearsCodePro'] > 20) {
+                    Allyear_salary['20+ years'].push(d.Salary);
+                };
+              });
+              return Allyear_salary;
+            };
 
-                let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
-                let leftAxisG = annotations.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", `translate(${margin.left - 10},${margin.top})`)
-                    .call(leftAxis);
-                let leftGridlines = d3.axisLeft(salaryScale)
-                        .tickSize(-chartWidth-10)
-                        .tickFormat("")
-                annotations.append("g")
-                            .attr("class", "y gridlines")
-                            .attr("transform",`translate(${margin.left-10},${margin.top})`)
-                            .call(leftGridlines);
-                let bottomAxis = d3.axisBottom(yearScale);
-                let bottomAxisG = annotations.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
-                    .call(bottomAxis);
+            var salary_groups = compute_salary_group (surveyResult);
+            console.log("salary_groups", salary_groups);
+
+            let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
+            let leftAxisG = annotations.append("g")
+                .attr("class", "y axis")
+                .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+                .call(leftAxis);
+            let leftGridlines = d3.axisLeft(salaryScale)
+                    .tickSize(-chartWidth-10)
+                    .tickFormat("")
+            annotations.append("g")
+                        .attr("class", "y gridlines")
+                        .attr("transform",`translate(${margin.left-10},${margin.top})`)
+                        .call(leftGridlines);
+            let bottomAxis = d3.axisBottom(yearGroupScale);
+            let bottomAxisG = annotations.append("g")
+                .attr("class", "x axis")
+                .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+                .call(bottomAxis);
+
 
             // update function passing data
-            function updateLinePlot(data) {
-                // const yearExtent = d3.extent(data, d => d['YearsCodePro']);
-                // const yearScale = d3.scaleLinear().domain(yearExtent).range([0, chartWidth]);
-                year_salary = [];
-                for(i=yearExtent[0];i<=yearExtent[1];i++) {
-                    temp = data.filter((d) => { return d['YearsCodePro'] === i});
-                    year_salary[i] = d3.map(temp,d => d.Salary);
+            function addLinePlot(data, role) {
+                year_salary = compute_salary_group (data);
+                let year_salary_result = []
+                for(i=0;i<yearGroupExtent.length;i++) {
+                    let year_group = yearGroupExtent[i];
+                    year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
+                console.log("year_salary_result", year_salary_result)
 
-                console.log(year_salary)
-                year_salary_result = []
-                for(i=yearExtent[0];i<=yearExtent[1];i++) {
-                    year_salary_result.push({"salary":Math.floor(d3.median(year_salary[i])* 100)/100, "year":i});
-                }
-                // year_salary_result contains year and average salary at the year
-                // console.log(year_salary_result);
-                // const salaryExtent = d3.extent(year_salary_result, d => d['salary']);
-                // const salaryScale = d3.scaleLinear().domain(salaryExtent).range([chartHeight, 0]);
-                // let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
-                // let leftAxisG = annotations.append("g")
-                //     .attr("class", "y axis")
-                //     .attr("transform", `translate(${margin.left - 10},${margin.top})`)
-                //     .call(leftAxis);
-                // let leftGridlines = d3.axisLeft(salaryScale)
-                //         .tickSize(-chartWidth-10)
-                //         .tickFormat("")
-                // annotations.append("g")
-                //             .attr("class", "y gridlines")
-                //             .attr("transform",`translate(${margin.left-10},${margin.top})`)
-                //             .call(leftGridlines);
-                // let bottomAxis = d3.axisBottom(yearScale);
-                // let bottomAxisG = annotations.append("g")
-                //     .attr("class", "x axis")
-                //     .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
-                //     .call(bottomAxis);
+                // let circles = chartArea.selectAll("circle.salary_point").data(year_salary_result)
+                //         .join(enter => enter.append("circle")
+                //         .attr("class", "salary_point")
+                //         .attr("stroke", "#6e6a6a")
+                //         .attr("stroke-width", 0.8)
+                //         .attr("r", 5)
+                //         .attr("cx", d => yearGroupScale(d['year_group']) )
+                //         .attr("cy", d => salaryScale(d['salary']) )
+                //         .attr("fill", "blue" ));
 
                 var lineGen = d3.line()
                                 .defined(d => !isNaN(d.salary))
-                                .x( d => yearScale(d['year']) )
+                                .x( d => yearGroupScale(d['year_group']) + yearGroupScale.bandwidth() / 2 )
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
 
-
-                chartArea.selectAll("path").remove();
-                chartArea.append("path")  // line with missing value
-                        .datum(year_salary_result.filter(lineGen.defined()))
-                        .attr("class", "line")
-                        .attr("fill", "none")
-                        .attr("stroke", "grey")
-                        .attr("stroke-width", 3)
-                        .attr("d", lineGen);
                 chartArea.append("path")
                         .datum(year_salary_result)
-                        .attr("class", "line")
+                        .attr("class", "line " + role)
                         .attr("fill", "none")
-                        .attr("stroke", "steelblue")
+                        .attr("stroke", roleScale(role))
                         .attr("stroke-width", 3)
                         .attr("d", lineGen);
+                
+                chartArea.selectAll("circle").select(".lineCircle")
+                    .data(year_salary_result)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", d => yearGroupScale(d['year_group']) + yearGroupScale.bandwidth() / 2 )
+                    .attr("cy", d => salaryScale(d['salary']))
+                    .attr("fill", roleScale(role))
+                    .attr("stroke", "#f0f0f0")
+                    .attr("stroke-width", 2)
+                    .attr("class", "lineCircle " + role)
+                    .attr("r", 8);
+
+                console.log(year_salary_result);
+                console.log(chartArea.selectAll("circle"))
 
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
@@ -268,35 +253,35 @@
                 activeRegion.on("mousemove", function(evt) {
                 // Update the position as you move
 
-                // Get mouse location
-                    let location = d3.pointer(evt);
-                    let x = location[0];
-                    // Use "invert" on a scale to go from pixels back to data
-                    let xDate = yearScale.invert(x);
-                    // We use the bisector to find the index of the element that's closest to our xDate
-                    let index = findDate(year_salary_result, xDate);
-                    // We can then get d, the data point that's closest
-                    let d = year_salary_result[index];
-
-                    // From there, it's just a matter of updating positions using our scales like we've done for a while now
-                    let xPos = yearScale(d['year']);
-                    let yPos = salaryScale(d['salary']);
-
-                    xMarker.attr("x1",xPos).attr("x2",xPos);
-                    valueMarker.attr("cx",xPos).attr("cy",yPos);
-
-                    let txt = d['salary']
-
-                    // We started with the following line, which has lots of overlaps
-                    // label.attr("x",xPos).attr("y",yPos).text(txt);
-
-                    // Here's a simple way to remove overlaps and deliver a consistent user experience
-                    if(isNaN(yPos)) {
-                        valueMarker.attr("visibility","hidden");
-                    } else {
-                        label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
-                        valueMarker.attr("visibility","");
-                    }
+                // // Get mouse location
+                //     let location = d3.pointer(evt);
+                //     let x = location[0];
+                //     // Use "invert" on a scale to go from pixels back to data
+                //     let xDate = yearGroupScale.invert(x);
+                //     // We use the bisector to find the index of the element that's closest to our xDate
+                //     let index = findDate(year_salary_result, xDate);
+                //     // We can then get d, the data point that's closest
+                //     let d = year_salary_result[index];
+                //
+                //     // From there, it's just a matter of updating positions using our scales like we've done for a while now
+                //     let xPos = yearGroupScale(d['year_group']);
+                //     let yPos = salaryScale(d['salary']);
+                //
+                //     xMarker.attr("x1",xPos).attr("x2",xPos);
+                //     valueMarker.attr("cx",xPos).attr("cy",yPos);
+                //
+                //     let txt = d['salary']
+                //
+                //     // We started with the following line, which has lots of overlaps
+                //     // label.attr("x",xPos).attr("y",yPos).text(txt);
+                //
+                //     // Here's a simple way to remove overlaps and deliver a consistent user experience
+                //     if(isNaN(yPos)) {
+                //         valueMarker.attr("visibility","hidden");
+                //     } else {
+                //         label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                //         valueMarker.attr("visibility","");
+                //     }
 
                 // if (xPos < chartWidth / 2.0) {
                 //     label.attr("x",xPos+4).attr("y",100).attr("text-anchor","start");
@@ -305,48 +290,63 @@
                 //     label.attr("x",xPos-4).attr("y",chartHeight-100).attr("text-anchor","end");
                 });
             }
-            updateLinePlot(surveyResult);
+
+            function updateLinePlot(data, role) {
+                chartArea.selectAll(".line").attr("opacity", 0.2);
+                chartArea.selectAll(".lineCircle").attr("opacity", 0.2);
+                chartArea.selectAll("." + role).attr("opacity", 1);
+            }
+
+            // draw all plots
+            addLinePlot(backend, 'backend');
+            addLinePlot(frontend, 'frontend');
+            addLinePlot(fullstack, 'fullstack');
+            addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
+            addLinePlot(businessAnalyst, 'businessAnalyst');
+            addLinePlot(embedded, 'embedded');
+            addLinePlot(devOps, 'devOps');
+            addLinePlot(pm, 'pm');
 
             var menuDiv = d3.select("div#button");
             var Button1 = menuDiv.append("button")
                     .text("Backend developer")
                     .on('click', function(){
-                        updateLinePlot(backend);
+                        updateLinePlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .text("Frontend developer")
                     .on('click', function(){
-                        updateLinePlot(frontend);
+                        updateLinePlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .text("Fullstack developer")
                     .on('click', function(){
-                        updateLinePlot(fullstack);
+                        updateLinePlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .text("Data scientist or data engineer")
                     .on('click', function(){
-                        updateLinePlot(dataScientistEngineer);
+                        updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .text("Data or business analyst")
                     .on('click', function(){
-                        updateLinePlot(businessAnalyst);
+                        updateLinePlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .text("Embedded software engineer")
                     .on('click', function(){
-                        updateLinePlot(embedded);
+                        updateLinePlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .text("DevOps or site reliability engineer")
                     .on('click', function(){
-                        updateLinePlot(devOps);
+                        updateLinePlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .text("Product manager")
                     .on('click', function(){
-                        updateLinePlot(pm);
+                        updateLinePlot(pm, 'pm');
                     });
         })
     </script>
