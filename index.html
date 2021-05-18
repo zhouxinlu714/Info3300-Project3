@@ -20,16 +20,24 @@
         font-size: smaller;
         fill: black;
     }
+    .div container{
+        width: 1400px;
+        position: relative;
+    }
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
-    <svg id = "line" height="600" width="800"></svg>
+    <div class="container">
+        <svg id = "line" height="600" width="800"></svg>
+        <svg id = "anno" height="600" width="400"></svg>
+    </div>
     <!-- <div>
         <button id="selectButton" type="button">backend</button>
     </div> -->
     <div id="button"></div>
     <script>
         const linesvg = d3.select("svg#line");
+        const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
         const height = linesvg.attr("height");
         const margin = {top: 70, right: 10, bottom: 30, left: 60};
@@ -167,6 +175,7 @@
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
+                console.log("data",data)
                 console.log("year_salary_result", year_salary_result)
 
                 // let circles = chartArea.selectAll("circle.salary_point").data(year_salary_result)
@@ -205,9 +214,6 @@
                     .attr("class", "lineCircle " + role)
                     .attr("r", 8);
 
-                console.log(year_salary_result);
-                console.log(chartArea.selectAll("circle"))
-
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
@@ -235,59 +241,99 @@
                     .attr("height",chartHeight)
                     .attr("fill","none")
                     .attr("pointer-events","all");
-                    let findDate = d3.bisector( d => d.year ).right;
+                
+                var rolename = getRoleName(role);  // get full role name
+                var language_dict = {};  // count LanguageWorkedWith 
+                data.forEach(d=>{
+                    entryArray = d.LanguageWorkedWith.split(";");
+                    for(i of entryArray){
+                        if(i in language_dict){
+                            language_dict[i] += 1
+                        } else {
+                            language_dict[i] = 1
+                        }
+                    }
+                })
+                console.log(language_dict)
+                const MostL1 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                language_dict[MostL1] = 0;  // remove the largest one
+                const MostL2 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                var edu_dict = {};
+                data.forEach(d=>{
+                    d.EdLevel+="(";
+                    edu_level = d.EdLevel.substring(0,d.EdLevel.indexOf("(")-1);
+                    if(edu_level in edu_dict) {
+                        edu_dict[edu_level] += 1
+                    } else {
+                        edu_dict[edu_level] = 1
+                    }
+                })
+                console.log(edu_dict);
+                var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
+                const MostED1 = Object.entries(edu_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                const MostED1_prec = Math.floor((edu_dict[MostED1]/ed_sum)*10000)/100;
+                edu_dict[MostED1] = 0;
+                const MostED2 = Object.entries(edu_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                const MostED2_prec = Math.floor((edu_dict[MostED2]/ed_sum)*10000)/100;
+                annosvg.html('');
+                annosvg.append("text").text(rolename).attr("x",100).attr("y",100);
+                annosvg.append("text").text("Most common language").attr("x",100).attr("y",150);
+                annosvg.append("text").text(MostL1).attr("x",100).attr("y",200);
+                annosvg.append("text").text(MostL2).attr("x",200).attr("y",200);
+                annosvg.append("text").text("Education level").attr("x",100).attr("y",250);
+                annosvg.append("text").text(MostED1).attr("x",100).attr("y",300);
+                annosvg.append("text").text(MostED1_prec+"%").attr("x",100).attr("y",350);
+                annosvg.append("text").text(MostED2).attr("x",100).attr("y",400);
+                annosvg.append("text").text(MostED2_prec+"%").attr("x",100).attr("y",450);
+                function updateAnno() {
 
+                }
                 // activeRegion is now the top-most item (even if invisible), so it should always catch the mouse events and never clash
                 activeRegion.on("mouseover", function() {
                 // Show the marker and label when mousing over
                     xMarker.attr("visibility","");
                     valueMarker.attr("visibility","");
                     label.attr("visibility","");
-                    });
-                    activeRegion.on("mouseout", function() {
+                });
+                activeRegion.on("mouseout", function() {
                     // Hide them when mousing out of chart
                     xMarker.attr("visibility","hidden");
                     valueMarker.attr("visibility","hidden");
                     label.attr("visibility","hidden");
                 });
                 activeRegion.on("mousemove", function(evt) {
-                // Update the position as you move
+                    // // Get mouse location
+                    let location = d3.pointer(evt);
+                    let x = location[0];
+                    var eachBand = yearGroupScale.bandwidth();
+                    var index;
+                    if(x<=+yearGroupScale.bandwidth() / 2) {
+                        index = 0;
+                    } else if(x<=eachBand+yearGroupScale.bandwidth() / 2) {
+                        index = 1;
+                    } else if(x<=2*eachBand+yearGroupScale.bandwidth() / 2) {
+                        index = 2;
+                    } else if(x<=3*eachBand+yearGroupScale.bandwidth() / 2) {
+                        index = 3;
+                    } else if(x<=4*eachBand+yearGroupScale.bandwidth() / 2) {
+                        index = 4;
+                    } else {
+                        index = 5;
+                    }
 
-                // // Get mouse location
-                //     let location = d3.pointer(evt);
-                //     let x = location[0];
-                //     // Use "invert" on a scale to go from pixels back to data
-                //     let xDate = yearGroupScale.invert(x);
-                //     // We use the bisector to find the index of the element that's closest to our xDate
-                //     let index = findDate(year_salary_result, xDate);
-                //     // We can then get d, the data point that's closest
-                //     let d = year_salary_result[index];
-                //
-                //     // From there, it's just a matter of updating positions using our scales like we've done for a while now
-                //     let xPos = yearGroupScale(d['year_group']);
-                //     let yPos = salaryScale(d['salary']);
-                //
-                //     xMarker.attr("x1",xPos).attr("x2",xPos);
-                //     valueMarker.attr("cx",xPos).attr("cy",yPos);
-                //
-                //     let txt = d['salary']
-                //
-                //     // We started with the following line, which has lots of overlaps
-                //     // label.attr("x",xPos).attr("y",yPos).text(txt);
-                //
-                //     // Here's a simple way to remove overlaps and deliver a consistent user experience
-                //     if(isNaN(yPos)) {
-                //         valueMarker.attr("visibility","hidden");
-                //     } else {
-                //         label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
-                //         valueMarker.attr("visibility","");
-                //     }
+                    let d = year_salary_result[index];
+                    // From there, it's just a matter of updating positions using our scales like we've done for a while now
+                    let xPos = yearGroupScale(d['year_group'])+ yearGroupScale.bandwidth() / 2;
+                    let yPos =  salaryScale(d['salary']);
+                    
+                    xMarker.attr("x1",xPos).attr("x2",xPos);
+                    valueMarker.attr("cx",xPos).attr("cy",yPos);
+                    
+                    let txt = d['salary']
+                    
+                    label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                    valueMarker.attr("visibility","");
 
-                // if (xPos < chartWidth / 2.0) {
-                //     label.attr("x",xPos+4).attr("y",100).attr("text-anchor","start");
-                // }
-                // else {
-                //     label.attr("x",xPos-4).attr("y",chartHeight-100).attr("text-anchor","end");
                 });
             }
 
@@ -312,42 +358,77 @@
                     .text("Backend developer")
                     .on('click', function(){
                         updateLinePlot(backend, 'backend');
+                        addLinePlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .text("Frontend developer")
                     .on('click', function(){
                         updateLinePlot(frontend, 'frontend');
+                        addLinePlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .text("Fullstack developer")
                     .on('click', function(){
                         updateLinePlot(fullstack, 'fullstack');
+                        addLinePlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .text("Data scientist or data engineer")
                     .on('click', function(){
                         updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
+                        addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .text("Data or business analyst")
                     .on('click', function(){
                         updateLinePlot(businessAnalyst, 'businessAnalyst');
+                        addLinePlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .text("Embedded software engineer")
                     .on('click', function(){
                         updateLinePlot(embedded, 'embedded');
+                        addLinePlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .text("DevOps or site reliability engineer")
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
+                        addLinePlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .text("Product manager")
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
+                        addLinePlot(pm, 'pm');
                     });
+            function getRoleName(role) {
+                if(role==='backend'){
+                    rolename = 'Backend developer'
+                }
+                if(role==='frontend'){
+                    rolename = 'Frontend developer'
+                }
+                if(role==='fullstack'){
+                    rolename = 'Fullstack developer'
+                }
+                if(role==='dataScientistEngineer'){
+                    rolename = 'Data or business analyst'
+                }
+                if(role==='embedded'){
+                    rolename = 'Embedded software engineer'
+                }
+                if(role==='devOps'){
+                    rolename = 'DevOps or site reliability engineer'
+                }
+                if(role==='businessAnalyst'){
+                    rolename = 'Data or business analyst'
+                }
+                if(role==='pm'){
+                    rolename = 'Product manager'
+                }
+                return rolename;
+            }
         })
     </script>
 </body>
