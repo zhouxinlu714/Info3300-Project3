@@ -39,7 +39,7 @@
         let chartArea = linesvg.append("g").attr("id","points")
                         .attr("transform",`translate(${margin.left},${margin.top})`);
 
-        d3.csv("../survey_results_public.csv", d3.autoType).then(data => {
+        d3.csv("./survey_results_public.csv", d3.autoType).then(data => {
             //import dataset
             var surveyResult = data
             console.log(surveyResult)
@@ -56,14 +56,20 @@
                         YearsCode: obj.YearsCode,
                         YearsCodePro: obj.YearsCodePro
                     }
-                    });   
-                
-             // clean data 
-            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA' && d['Salary'] != 'NA' && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA' && d['YearsCodePro'] <= 40 });
-            console.log(surveyResult)
-     
+                    });
+
+             // clean data
+            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA'
+            && d['Salary'] != 'NA' && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA' && d['YearsCodePro'] <= 26 });
+
             var backend = [];
             var frontend = [];
+            var fullstack = [];
+            var embedded = [];
+            var dataScientistEngineer = [];
+            var businessAnalyst = [];
+            var devOps = [];
+            var pm = [];
             surveyResult.forEach(d=>{
                 // if(d['YearsCodePro']==='More than 50 years') {
                 //     d['YearsCodePro'] = 51;
@@ -71,9 +77,9 @@
                 if(d['YearsCodePro']==='Less than 1 year') {
                     d['YearsCodePro'] = 1;
                 }
-                
+
                 //split devtype string
-                d['DevType'] = d['DevType'].split(";"); 
+                d['DevType'] = d['DevType'].split(";");
 
                 //create different dataset
                 d['DevType'].forEach((type, i) => {
@@ -83,31 +89,61 @@
                     if(type === "Developer, front-end"){
                         frontend.push(d)
                     }
+                    if(type === "Developer, full-stack"){
+                        fullstack.push(d)
+                    }
+                    if(type === "Developer, embedded applications or devices"){
+                        embedded.push(d)
+                    }
+                    if(type === "Engineer, data" || type ==="Data scientist or machine learning specialist"){
+                        dataScientistEngineer.push(d)
+                    }
+                    if(type === "Data or business analyst" ){
+                        businessAnalyst.push(d)
+                    }
+                    if(type === "DevOps specialist" || type === "Engineer, site reliability"){
+                        devOps.push(d)
+                    }
+                    if(type === "Product manager"){
+                        pm.push(d)
+                    }
                 })
             })
-            console.log(surveyResult)
-            console.log(backend)
-            console.log(frontend)
+            console.log("survey result", surveyResult)
+            console.log("back end", backend)
+            console.log("front end", frontend)
+            console.log("full stack", fullstack)
+            console.log("embedded", embedded)
+            console.log("data scientist", dataScientistEngineer)
+            console.log("business Analyst", businessAnalyst)
+            console.log("devOps", devOps)
+            console.log("pm", pm)
+
 
             //axis
             const yearExtent = d3.extent(surveyResult, d => d['YearsCodePro']);
             const yearScale = d3.scaleLinear().domain([0,yearExtent[1]]).range([0, chartWidth]);
+
+            const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
+            const salaryScale = d3.scaleLinear().domain([60000,600000]).range([chartHeight, 0]);
+            // const genSalaryScale = d3.scaleLinear().domain([60000,salaryExtent[1]]).range([chartHeight, 0]);
 
             Allyear_salary = [];
                 for(i=yearExtent[0];i<=yearExtent[1];i++) {
                     temp = surveyResult.filter((d) => { return d['YearsCodePro'] === i});
                     Allyear_salary[i] = d3.map(temp,d => d.Salary);
                 }
-            
-                console.log(Allyear_salary)
+
+                console.log("Allyear_salary", Allyear_salary)
 
                 Allyear_salary_result = []
                 for(i=yearExtent[0];i<=yearExtent[1];i++) {
                     Allyear_salary_result.push({"salary":Math.floor(d3.median(Allyear_salary[i])* 100)/100, "year":i});
-                }  
+                }
                 console.log(Allyear_salary_result);
-                const salaryExtent = d3.extent(Allyear_salary_result, d => d['salary']);
-                const salaryScale = d3.scaleLinear().domain([60000,salaryExtent[1]]).range([chartHeight, 0]);
+                // const salaryExtent = d3.extent(Allyear_salary_result, d => d['salary']);
+                // console.log("salary extent", salaryExtent)
+                // const salaryScale = d3.scaleLinear().domain([60000,salaryExtent[1]]).range([chartHeight, 0]);
 
                 let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("~f"));
                 let leftAxisG = annotations.append("g")
@@ -141,7 +177,7 @@
                 year_salary_result = []
                 for(i=yearExtent[0];i<=yearExtent[1];i++) {
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[i])* 100)/100, "year":i});
-                }  
+                }
                 // year_salary_result contains year and average salary at the year
                 // console.log(year_salary_result);
                 // const salaryExtent = d3.extent(year_salary_result, d => d['salary']);
@@ -163,15 +199,15 @@
                 //     .attr("class", "x axis")
                 //     .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
                 //     .call(bottomAxis);
-            
+
                 var lineGen = d3.line()
                                 .defined(d => !isNaN(d.salary))
                                 .x( d => yearScale(d['year']) )
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
 
-            
-                 chartArea.selectAll("path").remove();
+
+                chartArea.selectAll("path").remove();
                 chartArea.append("path")  // line with missing value
                         .datum(year_salary_result.filter(lineGen.defined()))
                         .attr("class", "line")
@@ -179,14 +215,14 @@
                         .attr("stroke", "grey")
                         .attr("stroke-width", 3)
                         .attr("d", lineGen);
-                chartArea.append("path") 
+                chartArea.append("path")
                         .datum(year_salary_result)
                         .attr("class", "line")
                         .attr("fill", "none")
                         .attr("stroke", "steelblue")
                         .attr("stroke-width", 3)
                         .attr("d", lineGen);
-  
+
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
@@ -261,7 +297,7 @@
                         label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
                         valueMarker.attr("visibility","");
                     }
-                    
+
                 // if (xPos < chartWidth / 2.0) {
                 //     label.attr("x",xPos+4).attr("y",100).attr("text-anchor","start");
                 // }
@@ -273,14 +309,44 @@
 
             var menuDiv = d3.select("div#button");
             var Button1 = menuDiv.append("button")
-                    .text("Developer-Backend")
+                    .text("Backend developer")
                     .on('click', function(){
                         updateLinePlot(backend);
                     });
             var Button2 = menuDiv.append("button")
-                    .text("Developer-Frontend")
+                    .text("Frontend developer")
                     .on('click', function(){
                         updateLinePlot(frontend);
+                    });
+            var Button3 = menuDiv.append("button")
+                    .text("Fullstack developer")
+                    .on('click', function(){
+                        updateLinePlot(fullstack);
+                    });
+            var Button4 = menuDiv.append("button")
+                    .text("Data scientist or data engineer")
+                    .on('click', function(){
+                        updateLinePlot(dataScientistEngineer);
+                    });
+            var Button5 = menuDiv.append("button")
+                    .text("Data or business analyst")
+                    .on('click', function(){
+                        updateLinePlot(businessAnalyst);
+                    });
+            var Button6 = menuDiv.append("button")
+                    .text("Embedded software engineer")
+                    .on('click', function(){
+                        updateLinePlot(embedded);
+                    });
+            var Button7 = menuDiv.append("button")
+                    .text("DevOps or site reliability engineer")
+                    .on('click', function(){
+                        updateLinePlot(devOps);
+                    });
+            var Button8 = menuDiv.append("button")
+                    .text("Product manager")
+                    .on('click', function(){
+                        updateLinePlot(pm);
                     });
         })
     </script>
