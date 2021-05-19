@@ -418,7 +418,9 @@
                 .attr("preserveAspectRatio","xMidYMid meet")
                 .attr("transform", (d,i) => {
                   if (i === 0){
-                    return 'translate(0,-10)';
+                    return 'translate(0,-8)';
+                  } else if (i === 1){
+                    return 'translate(0,-4)';
                   } else if (i === 4){
                     return 'translate(0,5)';
                   }
