@@ -64,7 +64,13 @@
     <h1>US Developer Career Guide</h1>
     <div class="container">
         <svg id = "line" height="600" width="800"></svg>
-        <svg id = "anno" height="600" width="600"></svg>
+        <svg id = "anno" height="600" width="600">
+          <!-- <defs id="mdef">
+        <pattern id="image" x="0" y="0" height="40" width="40">
+          <image x="0" y="0" width="40" height="40" xlink:href="./icons/languages/HTML_CSS.png"></image>
+        </pattern>
+  </defs> -->
+        </svg>
     </div>
     <!-- <div>
         <button id="selectButton" type="button">backend</button>
@@ -379,7 +385,11 @@
                 //     .attr("height", 0.4*r)
                 //     .style("fill", "black");
                 // });
-
+                function preloadImage(url)
+                {
+                    var img=new Image();
+                    img.src=url;
+                }
 
                 function getIconPath (languageName){
                     // Turn "Bash/Shell/PowerShell" into "bash_shell_powershell"
@@ -396,13 +406,24 @@
                 .data(sorted_languages)
                 .enter()
                 .append('image')
-                // .attr('xlink:href', './icons/languages/html.png')
-                .attr('xlink:href', d => getIconPath (d[0]))
-                .attr('width', 30)
-                .attr('height', 30)
-                .attr("x", (d,i) => rankAxisScale(i) -radiusScale(i)*0.2)
-                .attr("y", 100-radiusScale(i)*0.4)
-     
+                .attr('xlink:href', d => {
+                  url = getIconPath (d[0]);
+                  preloadImage(url);
+                  return url;
+                })
+                .attr('width', (d,i) => radiusScale(i)*1.1)
+                // .attr('height', (d,i) => radiusScale(i)*2)
+                .attr("x", (d,i) => rankAxisScale(i) -radiusScale(i)*0.55)
+                .attr("y", 100-radiusScale(i)*1)
+                .attr("preserveAspectRatio","xMidYMid meet")
+                .attr("transform", (d,i) => {
+                  if (i === 0){
+                    return 'translate(0,-10)';
+                  } else if (i === 4){
+                    return 'translate(0,5)';
+                  }
+                });
+
 
                 //node.append("image")
                 // .attr("xlink:href", function(d) {
@@ -412,7 +433,7 @@
                 // })
                 // .attr("width", "45px").attr("height", "20px").attr("x", "22")
                 // .attr("y", "10");
-  
+
                 //  node.append("image")
                 // .attr("xlink:href", "./icons/languages/html.png")
                 // .attr("x", -8)
