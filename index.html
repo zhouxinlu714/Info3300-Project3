@@ -313,15 +313,15 @@
                     .enter()
                     .append("g")
                     .attr("transform", "translate(" + 250 + "," + 360 + ")");
-  
-                // Appending path 
+
+                // Appending path
                 arcs.append("path")
                     .attr("fill",roleScale(role))
                     .attr("d", arc)
                     .attr("stroke", "black")
                     .style("stroke-width", "2px")
                 arcs.append("text")
-                    .attr("transform",(d)=>{ 
+                    .attr("transform",(d)=>{
                             console.log("dd",arc.centroid(d));
                             x = arc.centroid(d)[0];
                             y = arc.centroid(d)[1];
@@ -336,10 +336,10 @@
                                 y += 15;
                             }
 
-                            return "translate(" + x + "," + y + ")"; 
+                            return "translate(" + x + "," + y + ")";
                    })
                    .text(function(d){
-                    return d.data.key; 
+                    return d.data.key;
                 });
 
                 function preloadImage(url)
@@ -359,6 +359,7 @@
                     //console.log(languageName);
                     return link = './icons/languages/' + languageName + '.png'
                 }
+
                 ranksChartArea.selectAll("circle").select(".iconCircle")
                 .data(sorted_languages)
                 .enter()
@@ -406,8 +407,8 @@
                 });
 
                 }
-                
-                    
+
+
 
             // update function passing data
             function addLinePlot(data, role) {
@@ -539,8 +540,6 @@
             addLinePlot(devOps, 'devOps');
             addLinePlot(pm, 'pm');
 
-            //draw default bubbleplot
-            //updateBubblePlot(backend, 'backend')
 
             var menuDiv = d3.select("div#button");
             var Button1 = menuDiv.append("button")
@@ -549,7 +548,6 @@
                     .on('click', function(){
                         updateLinePlot(backend, 'backend');
                         updateBubblePlot(backend, 'backend');
-                        addLinePlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .style("background-color", roleScale('frontend'))
@@ -557,7 +555,6 @@
                     .on('click', function(){
                         updateLinePlot(frontend, 'frontend');
                         updateBubblePlot(frontend, 'frontend');
-                        addLinePlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .style("background-color", roleScale('fullstack'))
@@ -565,7 +562,6 @@
                     .on('click', function(){
                         updateLinePlot(fullstack, 'fullstack');
                         updateBubblePlot(fullstack, 'fullstack');
-                        addLinePlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .style("background-color", roleScale('dataScientistEngineer'))
@@ -573,7 +569,6 @@
                     .on('click', function(){
                         updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                         updateBubblePlot(dataScientistEngineer, 'dataScientistEngineer');
-                        addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .style("background-color", roleScale('businessAnalyst'))
@@ -581,7 +576,6 @@
                     .on('click', function(){
                         updateLinePlot(businessAnalyst, 'businessAnalyst');
                         updateBubblePlot(businessAnalyst, 'businessAnalyst');
-                        addLinePlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .style("background-color", roleScale('embedded'))
@@ -589,7 +583,6 @@
                     .on('click', function(){
                         updateLinePlot(embedded, 'embedded');
                         updateBubblePlot(embedded, 'embedded');
-                        addLinePlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .style("background-color", roleScale('devOps'))
@@ -597,7 +590,6 @@
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
                         updateBubblePlot(devOps, 'devOps');
-                        addLinePlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .style("background-color", roleScale('pm'))
@@ -605,7 +597,6 @@
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
                         updateBubblePlot(pm, 'pm');
-                        addLinePlot(pm, 'pm');
                     });
             function getRoleName(role) {
                 if(role==='backend'){
