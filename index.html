@@ -41,20 +41,24 @@
       text-align: center;
       cursor: default;
       transition: all 0.2s;
+      font-size: 15px;
+
     }
 
     button:hover{
       border-color: rgb(126, 126, 126);
+      opacity: 0.8;
     }
     button:focus{
       border-color: black;
+      outline: none;
     }
-    @media all and (max-width:30em){
+    /* @media all and (max-width:30em){
      button{
       display:block;
       margin:0.2em auto;
      }
-    }
+    } */
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
@@ -361,35 +365,60 @@
                     .attr("class", "iconCircle " + role)
                     .attr("r", (d,i) => radiusScale(i));
 
-                sorted_languages.forEach((d,i) => {
-                    y_center = 100;
-                    x_center = rankAxisScale(i);
-                    r = radiusScale(i);
-                    iconsArea.append("svg")
-                    .attr("class", "iconImage "+d[0])
-                    .attr("x", x_center-0.3*r)
-                    .attr("y", y_center-0.2*r)
-                    .attr("width", 0.6*r)
-                    .attr("height", 0.4*r)
-                    .style("fill", "black");
-                });
+                    console.log(sorted_languages[0][0])
 
-    //node.append("image")
-    // .attr("xlink:href", function(d) {
-    //     language = d[0].replaceAll("/", "_");
-    //     language = language.replaceAll("#", "_sharp");
-    //     return "icons/languages/" + language + ".png";
-    // })
-    // .attr("width", "45px").attr("height", "20px").attr("x", "22")
-    // .attr("y", "10");
+                // sorted_languages.forEach((d,i) => {
+                //     y_center = 100;
+                //     x_center = rankAxisScale(i);
+                //     r = radiusScale(i);
+                //     iconsArea.append("svg")
+                //     .attr("class", "iconImage "+d[0])
+                //     .attr("x", x_center-0.3*r)
+                //     .attr("y", y_center-0.2*r)
+                //     .attr("width", 0.6*r)
+                //     .attr("height", 0.4*r)
+                //     .style("fill", "black");
+                // });
+
+
+                function getIconPath (languageName){
+                    // Turn "Bash/Shell/PowerShell" into "bash_shell_powershell"
+                    languageName = languageName.toLowerCase().replace(/\//g, '_');
+                    if (languageName == "c#") {
+                        languageName = "c_sharp";
+                    }
+                    console.log(languageName);
+                    return link = './icons/languages/' + languageName + '.png'
+                }
+
+                console.log(getIconPath('html'))
+                ranksChartArea.selectAll("circle").select(".iconCircle")
+                .data(sorted_languages)
+                .enter()
+                .append('image')
+                // .attr('xlink:href', './icons/languages/html.png')
+                .attr('xlink:href', d => getIconPath (d[0]))
+                .attr('width', 30)
+                .attr('height', 30)
+                .attr("x", (d,i) => rankAxisScale(i) -radiusScale(i)*0.2)
+                .attr("y", 100-radiusScale(i)*0.4)
+     
+
+                //node.append("image")
+                // .attr("xlink:href", function(d) {
+                //     language = d[0].replaceAll("/", "_");
+                //     language = language.replaceAll("#", "_sharp");
+                //     return "icons/languages/" + language + ".png";
+                // })
+                // .attr("width", "45px").attr("height", "20px").attr("x", "22")
+                // .attr("y", "10");
   
-
-          //  node.append("image")
-          // .attr("xlink:href", "./icons/languages/html.png")
-          // .attr("x", -8)
-          // .attr("y", -8)
-          // .attr("width", 16)
-          // .attr("height", 16);
+                //  node.append("image")
+                // .attr("xlink:href", "./icons/languages/html.png")
+                // .attr("x", -8)
+                // .attr("y", -8)
+                // .attr("width", 16)
+                // .attr("height", 16);
 
 
                 // activeRegion is now the top-most item (even if invisible), so it should always catch the mouse events and never clash
