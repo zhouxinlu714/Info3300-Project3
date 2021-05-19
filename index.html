@@ -218,7 +218,7 @@
                 .call(bottomAxis);
 
             function updateBubblePlot(data, role) {
-                    var rolename = getRoleName(role);  // get full role name
+                var rolename = getRoleName(role);  // get full role name
                 var language_dict = {};  // count LanguageWorkedWith
                 data.forEach(d=>{
                     entryArray = d.LanguageWorkedWith.split(";");
@@ -235,12 +235,15 @@
                 var language_items = Object.keys(language_dict).map(function(key) {return [key, language_dict[key]]});
                 language_items.sort(function(first, second) {return second[1] - first[1]});
                 sorted_languages = language_items.slice(0, 6);
-                console.log("sorted languages", sorted_languages);
+                for(var i =0; i< sorted_languages.length;i++) {
+                    if(sorted_languages[i][0]==='Bash/Shell/PowerShell') {
+                        sorted_languages[i][0]='Bash';
+                    }
+                }
 
-
-                const MostL1 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-                language_dict[MostL1] = 0;  // remove the largest one
-                const MostL2 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                // const MostL1 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                // language_dict[MostL1] = 0;  // remove the largest one
+                // const MostL2 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
                 // console.log("language_dict", language_dict)
                 var edu_dict = {};
                 data.forEach(d=>{
@@ -252,13 +255,10 @@
                         edu_dict[edu_level] = 1
                     }
                 })
-                console.log(edu_dict);
                 var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
-                const MostED1 = Object.entries(edu_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-                const MostED1_prec = Math.floor((edu_dict[MostED1]/ed_sum)*10000)/100;
-                edu_dict[MostED1] = 0;
-                const MostED2 = Object.entries(edu_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-                const MostED2_prec = Math.floor((edu_dict[MostED2]/ed_sum)*10000)/100;
+                var edu_items = Object.keys(edu_dict).map(function(key) {return [key, edu_dict[key]]});
+                edu_items.sort(function(first, second) {return second[1] - first[1]});
+                console.log("edu",edu_items);
 
                 const radiusScale = d3.scaleLinear().domain([0,5]).range([50, 25]);
                 function rankAxisScale (rank){
@@ -273,6 +273,7 @@
                   }
                   return rank_x
                 };
+                ranksChartArea.html('');
 
                 var languages = ranksChartArea.selectAll("circle").select(".iconCircle")
                     .data(sorted_languages)
@@ -286,7 +287,60 @@
                     .attr("class", "iconCircle " + role)
                     .attr("r", (d,i) => radiusScale(i));
 
-                    console.log(sorted_languages[0][0])
+                // pie chart
+                var arc = d3.arc()
+                            .innerRadius(120)
+                            .outerRadius(150);
+                var edu_list = []
+                var others = 0;
+                for (var i = 0;i<edu_items.length;i++){
+                    if(edu_items[i][0]==="Some college/university study without earning a degre") {
+                        edu_items[i][0] = "No college degree";
+                    }
+                    if(i<=3){  // put first four in the list
+                        edu_list.push({"key":edu_items[i][0],"value":edu_items[i][1]});
+                    } else {
+                        others += edu_items[i][1]
+                    }
+                }
+                edu_list.push({"key":"Others","value":others});
+                console.log("list",edu_list);
+                var pie = d3.pie().value(function(d) {return d.value; })
+                var data_ready = pie(edu_list);
+                console.log(data_ready)
+                var arcs = ranksChartArea.selectAll("arc")
+                    .data(data_ready)
+                    .enter()
+                    .append("g")
+                    .attr("transform", "translate(" + 250 + "," + 360 + ")");
+  
+                // Appending path 
+                arcs.append("path")
+                    .attr("fill",roleScale(role))
+                    .attr("d", arc)
+                    .attr("stroke", "black")
+                    .style("stroke-width", "2px")
+                arcs.append("text")
+                    .attr("transform",(d)=>{ 
+                            console.log("dd",arc.centroid(d));
+                            x = arc.centroid(d)[0];
+                            y = arc.centroid(d)[1];
+                            if(x>0) {
+                                x+=20;
+                            } else if(x<-23){
+                                x = x-(15+(d.data.key.length)*8);
+                            }
+                            if(y<0) {
+                                y -= 40;
+                            } else {
+                                y += 15;
+                            }
+
+                            return "translate(" + x + "," + y + ")"; 
+                   })
+                   .text(function(d){
+                    return d.data.key; 
+                });
 
                 function preloadImage(url)
                 {
@@ -302,10 +356,9 @@
                     } else if (languageName == "c++") {
                         languageName = "Cpp";
                     }
-                    console.log(languageName);
+                    //console.log(languageName);
                     return link = './icons/languages/' + languageName + '.png'
                 }
-
                 ranksChartArea.selectAll("circle").select(".iconCircle")
                 .data(sorted_languages)
                 .enter()
@@ -487,7 +540,7 @@
             addLinePlot(pm, 'pm');
 
             //draw default bubbleplot
-            updateBubblePlot(backend, 'backend')
+            //updateBubblePlot(backend, 'backend')
 
             var menuDiv = d3.select("div#button");
             var Button1 = menuDiv.append("button")
@@ -496,6 +549,7 @@
                     .on('click', function(){
                         updateLinePlot(backend, 'backend');
                         updateBubblePlot(backend, 'backend');
+                        addLinePlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .style("background-color", roleScale('frontend'))
@@ -503,6 +557,7 @@
                     .on('click', function(){
                         updateLinePlot(frontend, 'frontend');
                         updateBubblePlot(frontend, 'frontend');
+                        addLinePlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .style("background-color", roleScale('fullstack'))
@@ -510,6 +565,7 @@
                     .on('click', function(){
                         updateLinePlot(fullstack, 'fullstack');
                         updateBubblePlot(fullstack, 'fullstack');
+                        addLinePlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .style("background-color", roleScale('dataScientistEngineer'))
@@ -517,6 +573,7 @@
                     .on('click', function(){
                         updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                         updateBubblePlot(dataScientistEngineer, 'dataScientistEngineer');
+                        addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .style("background-color", roleScale('businessAnalyst'))
@@ -524,6 +581,7 @@
                     .on('click', function(){
                         updateLinePlot(businessAnalyst, 'businessAnalyst');
                         updateBubblePlot(businessAnalyst, 'businessAnalyst');
+                        addLinePlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .style("background-color", roleScale('embedded'))
@@ -531,6 +589,7 @@
                     .on('click', function(){
                         updateLinePlot(embedded, 'embedded');
                         updateBubblePlot(embedded, 'embedded');
+                        addLinePlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .style("background-color", roleScale('devOps'))
@@ -538,6 +597,7 @@
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
                         updateBubblePlot(devOps, 'devOps');
+                        addLinePlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .style("background-color", roleScale('pm'))
@@ -545,6 +605,7 @@
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
                         updateBubblePlot(pm, 'pm');
+                        addLinePlot(pm, 'pm');
                     });
             function getRoleName(role) {
                 if(role==='backend'){
