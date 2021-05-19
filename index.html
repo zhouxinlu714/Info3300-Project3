@@ -53,28 +53,13 @@
       border-color: black;
       outline: none;
     }
-    /* @media all and (max-width:30em){
-     button{
-      display:block;
-      margin:0.2em auto;
-     }
-    } */
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
     <div class="container">
         <svg id = "line" height="600" width="800"></svg>
-        <svg id = "anno" height="600" width="600">
-          <!-- <defs id="mdef">
-        <pattern id="image" x="0" y="0" height="40" width="40">
-          <image x="0" y="0" width="40" height="40" xlink:href="./icons/languages/HTML_CSS.png"></image>
-        </pattern>
-  </defs> -->
-        </svg>
+        <svg id = "anno" height="600" width="600"></svg>
     </div>
-    <!-- <div>
-        <button id="selectButton" type="button">backend</button>
-    </div> -->
     <div id="button"></div>
     <script>
         const linesvg = d3.select("svg#line");
@@ -525,9 +510,14 @@
             }
 
             function updateLinePlot(data, role) {
+              if (role === 'all'){
+                chartArea.selectAll(".line").attr("opacity", 1);
+                chartArea.selectAll(".lineCircle").attr("opacity", 1);
+              } else {
                 chartArea.selectAll(".line").attr("opacity", 0.2);
                 chartArea.selectAll(".lineCircle").attr("opacity", 0.2);
                 chartArea.selectAll("." + role).attr("opacity", 1);
+              }
             }
 
             // draw all plots
@@ -598,6 +588,14 @@
                         updateLinePlot(pm, 'pm');
                         updateBubblePlot(pm, 'pm');
                     });
+            var Button9 = menuDiv.append("button")
+                    .style("background-color", roleScale('all'))
+                    .style("font-weight", "bold")
+                    .text('ALL DEVELOPERS')
+                    .on('click', function(){
+                        updateLinePlot(surveyResult, 'all');
+                        updateBubblePlot(surveyResult, 'all');
+                    });
             function getRoleName(role) {
                 if(role==='backend'){
                     rolename = 'Backend developer'
@@ -623,8 +621,14 @@
                 if(role==='pm'){
                     rolename = 'Product manager'
                 }
+                if(role==='all'){
+                    rolename = 'All developer roles'
+                }
                 return rolename;
             }
+
+            // draw default bubble plot & pie chart
+            updateBubblePlot(surveyResult, 'all');
         })
     </script>
 </body>
