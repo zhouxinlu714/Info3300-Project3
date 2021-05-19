@@ -361,18 +361,28 @@
                     .attr("class", "iconCircle " + role)
                     .attr("r", (d,i) => radiusScale(i));
 
-                // sorted_languages.forEach((d,i) => {
-                //     y_center = 100;
-                //     x_center = rankAxisScale(i);
-                //     r = radiusScale(i);
-                //     iconsArea.append("svg")
-                //     .attr("class", "iconImage "+d[0])
-                //     .attr("x", x_center-0.3*r)
-                //     .attr("y", y_center-0.2*r)
-                //     .attr("width", 0.6*r)
-                //     .attr("height", 0.4*r)
-                //     .style("fill", "black");
-                // });
+                sorted_languages.forEach((d,i) => {
+                    y_center = 100;
+                    x_center = rankAxisScale(i);
+                    r = radiusScale(i);
+                    iconsArea.append("svg")
+                    .attr("class", "iconImage "+d[0])
+                    .attr("x", x_center-0.3*r)
+                    .attr("y", y_center-0.2*r)
+                    .attr("width", 0.6*r)
+                    .attr("height", 0.4*r)
+                    .style("fill", "black");
+                });
+
+    //node.append("image")
+    // .attr("xlink:href", function(d) {
+    //     language = d[0].replaceAll("/", "_");
+    //     language = language.replaceAll("#", "_sharp");
+    //     return "icons/languages/" + language + ".png";
+    // })
+    // .attr("width", "45px").attr("height", "20px").attr("x", "22")
+    // .attr("y", "10");
+  
 
           //  node.append("image")
           // .attr("xlink:href", "./icons/languages/html.png")
