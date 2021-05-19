@@ -6,11 +6,12 @@
 <style>
     body{
         font-family: Arial, Helvetica, sans-serif;
-        background-color: white;
+        background-color: #EBDECF;
     }
 
     .gridlines line {
-        stroke: #ccc;
+        /* stroke: #ccc; */
+        stroke: #9c755f;
         stroke-dasharray: 6;
     }
 
@@ -26,13 +27,27 @@
         position: relative;
     }
 
+    .axisBrown line{
+      stroke: #9c755f;
+    }
+
+    .axisBrown path{
+      stroke: #9c755f;
+    }
+
+    .axisBrown text{
+      fill: #9c755f;
+      font-size: 12;
+    }
+
+
     button {
       display: inline-block;
       color: white;
       font-family:'Roboto',sans-serif;
       padding:0.5em 1.8em;
       margin:0.1em 0.3em 0.3em 0.1em;
-      border: 2px solid white;
+      border: 2px solid #EBDECF;
       border-radius:2em;
       word-spacing: normal;
       text-transform: none;
@@ -66,7 +81,7 @@
         const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
         const height = linesvg.attr("height");
-        const margin = {top: 70, right: 10, bottom: 30, left: 60};
+        const margin = {top: 70, right: 10, bottom: 60, left: 60};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const ranksWidth = annosvg.attr("width");
@@ -183,10 +198,9 @@
             var salary_groups = compute_salary_group (surveyResult);
             console.log("salary_groups", salary_groups);
 
-            // let leftAxis = d3.axisLeft(salaryScale).tickFormat(d3.format("$~f"));
             let leftAxis = d3.axisLeft(salaryScale).tickFormat(function (d) {return "$"+ d/1000 + "K"});
             let leftAxisG = annotations.append("g")
-                .attr("class", "y axis")
+                .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left - 10},${margin.top})`)
                 .call(leftAxis);
             let leftGridlines = d3.axisLeft(salaryScale)
@@ -198,7 +212,8 @@
                         .call(leftGridlines);
             let bottomAxis = d3.axisBottom(yearGroupScale);
             let bottomAxisG = annotations.append("g")
-                .attr("class", "x axis")
+                // .attr("class", "x axis")
+                .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
                 .call(bottomAxis);
 
@@ -267,7 +282,7 @@
                     .attr("cx", (d,i) => rankAxisScale(i))
                     .attr("cy", 100)
                     .attr("fill", roleScale(role))
-                    .attr("stroke", "#f0f0f0")
+                    .attr("stroke", "#EBDECF")
                     .attr("stroke-width", 2)
                     .attr("class", "iconCircle " + role)
                     .attr("r", (d,i) => radiusScale(i));
@@ -428,7 +443,7 @@
                     .attr("cy", d => salaryScale(d['salary']))
                     .attr("fill", roleScale(role))
                     .attr("stroke", "#f0f0f0")
-                    .attr("stroke-width", 2)
+                    .attr("stroke-width", 1)
                     .attr("class", "lineCircle " + role)
                     .attr("r", 8);
 
@@ -629,6 +644,8 @@
 
             // draw default bubble plot & pie chart
             updateBubblePlot(surveyResult, 'all');
+
+            console.log(roleScale('all'))
         })
     </script>
 </body>
