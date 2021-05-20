@@ -58,6 +58,13 @@
       fill: white;
       font-size: 12;
     }
+    .arc_path{
+        stroke: white;
+        stroke-width: 2px;
+    }
+    .arc_text{
+        fill:white;
+    }
 
 
     button {
@@ -90,9 +97,75 @@
       border: 2px solid black;
       outline: none;
     }
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+    .mode {
+        position: absolute;
+        top:40px;
+        right: 14px;
+        color:white;
+    }
+    .switch {
+        position: absolute;
+        top:20px;
+        right: 20px;
+        display: inline-block;
+        width: 70px;
+        height: 34px;
+    }
+
+    .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 30px;
+        width: 30px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    input:checked + .slider {
+        background-color: white;
+    }
+
+    input:focus + .slider {
+        box-shadow: 0 0 1px white;
+    }
+
+    input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(36px);
+        background-color: black;
+    }
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
+    <p class="mode" id="p1">Dark Mode</p>
     <h3> It may take 3-5 seconds to load the diagram due to the huge data </h3>
     <h3>1. Choose your devloper type</h3>
     <div id="button"></div>
@@ -100,7 +173,45 @@
         <svg id = "line" height="600" width="800"></svg>
         <svg id = "anno" height="600" width="600"></svg>
     </div>
+    <label class="switch">
+        <input type="checkbox" id="mycheck", onclick="themeChange()" checked>
+        <span class="slider round"></span>
+    </label>
     <script>
+        function themeChange() {
+            var checkBox = document.getElementById("mycheck");
+            console.log(checkBox.checked);
+            var stylesheet = document.styleSheets[0];
+            console.log(stylesheet);
+            if(!checkBox.checked) {
+                document.getElementById("p1").innerHTML = "Light Mode";
+                stylesheet.cssRules[0].style.backgroundImage = "";
+                stylesheet.cssRules[1].style.color = "black";
+                stylesheet.cssRules[2].style.color = "black";
+                stylesheet.cssRules[9].style.cssText = "fill: black; font-size: 12px;";
+                stylesheet.cssRules[8].style.cssText = "stroke: black;";
+                stylesheet.cssRules[7].style.cssText = "stroke: black;";
+                stylesheet.cssRules[10].style.cssText = "stroke: black; stroke-width: 2px;";
+                stylesheet.cssRules[11].style.cssText = "fill: black;";
+                //stylesheet.cssRules[12].style.cssText = "display: inline-block; color: black; font-family: Roboto, sans-serif; width: 12em; padding: 0.5em 1.8em; margin: 0.1em 0.3em 0.3em 0.1em; border: 2px solid black; border-radius: 2em; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px;"
+                stylesheet.cssRules[17].style.color = "black";
+
+            } 
+            else {
+                document.getElementById("p1").innerHTML = "Dark Mode"
+                stylesheet.cssRules[0].style.backgroundImage ="linear-gradient(45deg, rgba(3, 41, 58, 0.816), rgba(17, 23, 43, 0.88)), url('./icons/background.jpg')"
+                stylesheet.cssRules[1].style.color = "white";
+                stylesheet.cssRules[2].style.color = "rgb(204, 204, 204)";
+                stylesheet.cssRules[9].style.cssText = "fill: white; font-size: 12px;";
+                stylesheet.cssRules[8].style.cssText = "stroke: white;";
+                stylesheet.cssRules[7].style.cssText = "stroke: white;";
+                stylesheet.cssRules[10].style.cssText = "stroke: white; stroke-width: 2px;";
+                stylesheet.cssRules[11].style.cssText = "fill: white;";
+                stylesheet.cssRules[12].style.cssText = "display: inline-block; color: white; font-family: Roboto, sans-serif; width: 12em; padding: 0.5em 1.8em; margin: 0.1em 0.3em 0.3em 0.1em; border: 2px solid rgb(235, 222, 207); border-radius: 2em; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px;"
+                stylesheet.cssRules[17].style.color = "white";
+            }
+
+        }
         const linesvg = d3.select("svg#line");
         const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
@@ -192,7 +303,8 @@
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
 
-            const roleScale = d3.scaleOrdinal(d3.schemeTableau10);
+            //const roleScale = d3.scaleOrdinal(d3.schemeTableau10);
+            const roleScale = d3.scaleOrdinal().domain(["all","backend","frontend","fullstack","embedded","dataScientistEngineer","businessAnalyst","devOps","pm"]).range(["#597EF7","#FAAD14","#FF7946","#F5222D","#7CB305","#4152A7","#9254DC","#A3B5D6","#E9BABF"]);
 
             function compute_salary_group (data) {
               Allyear_salary = {};
@@ -244,7 +356,7 @@
             // Add X axis label:
             linesvg.append("text")
                 .attr("text-anchor", "end")
-                .style("fill", "white")
+                .attr("class","arc_text")
                 .attr("x", width)
                 .attr("y", height - 10)
                 .text("Years of experience");
@@ -252,7 +364,7 @@
             // Y axis label:
             linesvg.append("text")
                 .attr("text-anchor", "end")
-                .style("fill", "white")
+                .attr("class","arc_text")
                 .attr("transform", "rotate(-90)")
                 .attr("y", 20)
                 .attr("x", -margin.top)
@@ -282,24 +394,8 @@
                     }
                 }
 
-                // const MostL1 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-                // language_dict[MostL1] = 0;  // remove the largest one
-                // const MostL2 = Object.entries(language_dict).reduce((a, b) => a[1] > b[1] ? a : b)[0];
-                // console.log("language_dict", language_dict)
-                var edu_dict = {};
-                data.forEach(d=>{
-                    d.EdLevel+="(";
-                    edu_level = d.EdLevel.substring(0,d.EdLevel.indexOf("(")-1);
-                    if(edu_level in edu_dict) {
-                        edu_dict[edu_level] += 1
-                    } else {
-                        edu_dict[edu_level] = 1
-                    }
-                })
-                var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
-                var edu_items = Object.keys(edu_dict).map(function(key) {return [key, edu_dict[key]]});
-                edu_items.sort(function(first, second) {return second[1] - first[1]});
-                console.log("edu",edu_items);
+                var roloecolor = roleScale(role);
+                var bubbleroleScale = d3.scaleLinear().domain([1,sorted_languages[0][1]]).range(["white", roloecolor])
 
                 const radiusScale = d3.scaleLinear().domain([0,5]).range([50, 25]);
                 function rankAxisScale (rank){
@@ -315,35 +411,54 @@
                   return rank_x
                 };
                 ranksChartArea.html('');
-
+                console.log("sorted_languages",sorted_languages)
                 var languages = ranksChartArea.selectAll("circle").select(".iconCircle")
                     .data(sorted_languages)
                     .enter()
                     .append("circle")
                     .attr("cx", (d,i) => rankAxisScale(i))
                     .attr("cy", 100)
-                    .attr("fill", roleScale(role))
+                    .attr("fill", (d,i)=>bubbleroleScale(d[1]))
                     .attr("stroke", "#EBDECF")
                     .attr("stroke-width", 2)
                     .attr("class", "iconCircle " + role)
                     .attr("r", (d,i) => radiusScale(i));
 
                 // pie chart
+                var edu_dict = {};
+                data.forEach(d=>{
+                    d.EdLevel+="(";
+                    edu_level = d.EdLevel.substring(0,d.EdLevel.indexOf("(")-1);
+                    if(edu_level in edu_dict) {
+                        edu_dict[edu_level] += 1
+                    } else {
+                        edu_dict[edu_level] = 1
+                    }
+                })
+                var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
+                var edu_items = Object.keys(edu_dict).map(function(key) {return [key, edu_dict[key]]});
+                edu_items.sort(function(first, second) {return second[1] - first[1]});
+                console.log("edu",edu_items);
+
                 var arc = d3.arc()
                             .innerRadius(120)
                             .outerRadius(150);
                 var edu_list = []
                 var others = 0;
+                var max = 0;
                 for (var i = 0;i<edu_items.length;i++){
                     if(edu_items[i][0]==="Some college/university study without earning a degre") {
                         edu_items[i][0] = "No college degree";
                     }
                     if(i<=3){  // put first four in the list
                         edu_list.push({"key":edu_items[i][0],"value":edu_items[i][1]});
+                        max = Math.max(max,edu_items[i][1])
                     } else {
                         others += edu_items[i][1]
                     }
                 }
+                var color = roleScale(role);
+                var pieroleScale = d3.scaleLog().domain([1,max]).range(["white", color])
                 edu_list.push({"key":"Others","value":others});
                 console.log("list",edu_list);
                 var pie = d3.pie().value(function(d) {return d.value; })
@@ -357,12 +472,11 @@
 
                 // Appending path
                 arcs.append("path")
-                    .attr("fill",roleScale(role))
+                    .attr("fill",d => pieroleScale(d.data.value))
                     .attr("d", arc)
-                    .attr("stroke", "white")
-                    .style("stroke-width", "2px")
+                    .attr("class","arc_path")
                 arcs.append("text")
-                    .style("fill","white")
+                    .attr("class","arc_text")
                     .attr("transform",(d)=>{
                             x = arc.centroid(d)[0];
                             y = arc.centroid(d)[1];
@@ -416,7 +530,7 @@
                 .enter()
                 .append("text")
                 .style("text-anchor","middle")
-                .style("fill","white")
+                .attr("class","arc_text")
                 .attr("x", (d,i) => rankAxisScale(i))
                 .attr("y", 10)
                 .text(function(d) { return d[0]; })
@@ -501,6 +615,14 @@
                     .attr("class", "lineCircle " + role)
                     .attr("r", 8);
 
+            }
+            function updateHover(data, role) {
+                year_salary = compute_salary_group (data);
+                let year_salary_result = []
+                for(i=0;i<yearGroupExtent.length;i++) {
+                    let year_group = yearGroupExtent[i];
+                    year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
+                }
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
@@ -510,16 +632,7 @@
                     .attr("y1",0)
                     .attr("y2",chartHeight)
                     .attr("visibility","hidden");
-
-                // let valueMarker = mouseGroup.append("circle")
-                //     .attr("id","valueMarker")
-                //     .attr("fill","none")
-                //     .attr("stroke","steelblue")
-                //     .attr("stroke-width",2)
-                //     .attr("r",6)
-                //     .attr("visibility","hidden");
-
-                    let valueMarker = mouseGroup
+                let valueMarker = mouseGroup
                     .append('image')
                     .attr('xlink:href', url = './icons/developer.png')
                     .attr("id","valueMarker")
@@ -532,7 +645,7 @@
 
                 let label = mouseGroup.append("text")
                     .attr("id","label")
-                    .style("fill", "white")
+                    .attr("class","arc_text")
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
@@ -558,21 +671,6 @@
                     // // Get mouse location
                     let location = d3.pointer(evt);
                     let x = location[0];
-                    // var eachBand = yearGroupScale.bandwidth();
-                    // var index;
-                    // if(x<=+yearGroupScale.bandwidth() / 2) {
-                    //     index = 0;
-                    // } else if(x<=eachBand+yearGroupScale.bandwidth() / 2) {
-                    //     index = 1;
-                    // } else if(x<=2*eachBand+yearGroupScale.bandwidth() / 2) {
-                    //     index = 2;
-                    // } else if(x<=3*eachBand+yearGroupScale.bandwidth() / 2) {
-                    //     index = 3;
-                    // } else if(x<=4*eachBand+yearGroupScale.bandwidth() / 2) {
-                    //     index = 4;
-                    // } else {
-                    //     index = 5;
-                    // }
                     if(x<67.5) {
                         index = 0;
                     } else if(x<202.5) {
@@ -586,8 +684,6 @@
                     } else {
                         index = 5;
                     }
-
-
                     let d = year_salary_result[index];
                     // From there, it's just a matter of updating positions using our scales like we've done for a while now
                     let xPos = yearGroupScale(d['year_group'])+ yearGroupScale.bandwidth() / 2;
@@ -599,12 +695,10 @@
 
                     let txt = "$" + d['salary']/1000 + "K";
 
-                    label.text(txt).attr("class","annotation").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                    label.text(txt).attr("class","arc_text").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
                     valueMarker.attr("visibility","");
-
                 });
             }
-
             function updateLinePlot(data, role) {
               if (role === 'all'){
                 chartArea.selectAll(".line").attr("opacity", 1);
@@ -625,7 +719,7 @@
             addLinePlot(embedded, 'embedded');
             addLinePlot(devOps, 'devOps');
             addLinePlot(pm, 'pm');
-
+            updateHover(pm, 'pm');
 
             var menuDiv = d3.select("div#button");
 
@@ -643,7 +737,8 @@
                     .on('click', function(){
                         updateLinePlot(backend, 'backend');
                         updateBubblePlot(backend, 'backend');
-                        addLinePlot(backend, 'backend');
+                        //addLinePlot(backend, 'backend');
+                        updateHover(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .style("background-color", roleScale('frontend'))
@@ -651,7 +746,8 @@
                     .on('click', function(){
                         updateLinePlot(frontend, 'frontend');
                         updateBubblePlot(frontend, 'frontend');
-                        addLinePlot(frontend, 'frontend');
+                        //addLinePlot(frontend, 'frontend');
+                        updateHover(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .style("background-color", roleScale('fullstack'))
@@ -659,7 +755,8 @@
                     .on('click', function(){
                         updateLinePlot(fullstack, 'fullstack');
                         updateBubblePlot(fullstack, 'fullstack');
-                        addLinePlot(fullstack, 'fullstack');
+                        //addLinePlot(fullstack, 'fullstack');
+                        updateHover(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .style("background-color", roleScale('dataScientistEngineer'))
@@ -667,7 +764,8 @@
                     .on('click', function(){
                         updateLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                         updateBubblePlot(dataScientistEngineer, 'dataScientistEngineer');
-                        addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
+                        //addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
+                        updateHover(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .style("background-color", roleScale('businessAnalyst'))
@@ -675,7 +773,8 @@
                     .on('click', function(){
                         updateLinePlot(businessAnalyst, 'businessAnalyst');
                         updateBubblePlot(businessAnalyst, 'businessAnalyst');
-                        addLinePlot(businessAnalyst, 'businessAnalyst');
+                        //addLinePlot(businessAnalyst, 'businessAnalyst');
+                        updateHover(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .style("background-color", roleScale('embedded'))
@@ -683,7 +782,8 @@
                     .on('click', function(){
                         updateLinePlot(embedded, 'embedded');
                         updateBubblePlot(embedded, 'embedded');
-                        addLinePlot(embedded, 'embedded');
+                        //addLinePlot(embedded, 'embedded');
+                        updateHover(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .style("background-color", roleScale('devOps'))
@@ -691,7 +791,8 @@
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
                         updateBubblePlot(devOps, 'devOps');
-                        addLinePlot(devOps, 'devOps');
+                        //addLinePlot(devOps, 'devOps');
+                        updateHover(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .style("background-color", roleScale('pm'))
@@ -699,7 +800,8 @@
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
                         updateBubblePlot(pm, 'pm');
-                        addLinePlot(pm, 'pm');
+                        //addLinePlot(pm, 'pm');
+                        updateHover(pm, 'pm');
                     });
             function getRoleName(role) {
                 if(role==='backend'){
