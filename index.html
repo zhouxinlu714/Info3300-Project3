@@ -6,12 +6,31 @@
 <style>
     body{
         font-family: Arial, Helvetica, sans-serif;
-        background-color: #EBDECF;
+        /* background-color: #1f2022; */
+        background-image:  linear-gradient(45deg, 
+            rgba(3, 41, 58, 0.815), 
+            rgba(17, 23, 43, 0.877)
+            ),url(./icons/background.jpg);
+        background-position: center; /* Center the image */
+        background-repeat: no-repeat; /* Do not repeat the image */
+        background-size: cover; 
+    }
+
+    h1{
+        text-align: center;
+        font-weight: 800;
+        font-size: 50px;
+        color: rgb(255, 255, 255);
+    }
+    h3{
+        text-align: center;
+        font-weight: 500;
+        color: rgb(204, 204, 204);
     }
 
     .gridlines line {
         /* stroke: #ccc; */
-        stroke: #9c755f;
+        stroke: rgb(122, 122, 122);
         stroke-dasharray: 6;
     }
 
@@ -28,15 +47,15 @@
     }
 
     .axisBrown line{
-      stroke: #9c755f;
+      stroke: white;
     }
 
     .axisBrown path{
-      stroke: #9c755f;
+      stroke: white;
     }
 
     .axisBrown text{
-      fill: #9c755f;
+      fill: white;
       font-size: 12;
     }
 
@@ -45,6 +64,9 @@
       display: inline-block;
       color: white;
       font-family:'Roboto',sans-serif;
+      width: 12em;
+      /* height: 5em; */
+      /* height: 60px; */
       padding:0.5em 1.8em;
       margin:0.1em 0.3em 0.3em 0.1em;
       border: 2px solid #EBDECF;
@@ -62,26 +84,28 @@
 
     button:hover{
       border-color: rgb(126, 126, 126);
-      opacity: 0.8;
+      opacity: 0.5;
     }
     button:focus{
-      border-color: black;
+      border: 2px solid black;
       outline: none;
     }
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
+    <h3> It may take 3-5 seconds to load the diagram due to the huge data </h3>
+    <h3>1. Choose your devloper type</h3>
+    <div id="button"></div>
     <div class="container">
         <svg id = "line" height="600" width="800"></svg>
         <svg id = "anno" height="600" width="600"></svg>
     </div>
-    <div id="button"></div>
     <script>
         const linesvg = d3.select("svg#line");
         const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
         const height = linesvg.attr("height");
-        const margin = {top: 70, right: 10, bottom: 60, left: 60};
+        const margin = {top: 70, right: 10, bottom: 60, left: 90};
         const chartWidth = width - margin.left - margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const ranksWidth = annosvg.attr("width");
@@ -94,8 +118,8 @@
                         .attr("transform",`translate(${margin.left},${margin.top})`);
         let ranksChartArea = annosvg.append("g").attr("id","ranks")
                         .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
-        let iconsArea = annosvg.append("g").attr("id","icons")
-                        .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
+        // let iconsArea = annosvg.append("g").attr("id","icons")
+        //                 .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
 
         d3.csv("./survey_results_public.csv", d3.autoType).then(data => {
             //import dataset
@@ -216,6 +240,23 @@
                 .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
                 .call(bottomAxis);
+            
+            // Add X axis label:
+            linesvg.append("text")
+                .attr("text-anchor", "end")
+                .style("fill", "white")
+                .attr("x", width)
+                .attr("y", height - 10)
+                .text("Years of experience");
+
+            // Y axis label:
+            linesvg.append("text")
+                .attr("text-anchor", "end")
+                .style("fill", "white")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 20)
+                .attr("x", -margin.top)
+                .text("Median salary(USD)")
 
             function updateBubblePlot(data, role) {
                 var rolename = getRoleName(role);  // get full role name
@@ -321,6 +362,7 @@
                     .attr("stroke", "black")
                     .style("stroke-width", "2px")
                 arcs.append("text")
+                    .style("fill","white")
                     .attr("transform",(d)=>{
                             console.log("dd",arc.centroid(d));
                             x = arc.centroid(d)[0];
@@ -375,6 +417,7 @@
                 .enter()
                 .append("text")
                 .style("text-anchor","middle")
+                .style("fill","white")
                 .attr("x", (d,i) => rankAxisScale(i))
                 .attr("y", 10)
                 .text(function(d) { return d[0]; })
@@ -451,22 +494,34 @@
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
                     .attr("fill","none")
-                    .attr("stroke","black")
+                    .attr("stroke","white")
                     .attr("stroke-width",1)
                     .attr("y1",0)
                     .attr("y2",chartHeight)
                     .attr("visibility","hidden");
 
-                let valueMarker = mouseGroup.append("circle")
+                // let valueMarker = mouseGroup.append("circle")
+                //     .attr("id","valueMarker")
+                //     .attr("fill","none")
+                //     .attr("stroke","steelblue")
+                //     .attr("stroke-width",2)
+                //     .attr("r",6)
+                //     .attr("visibility","hidden");
+
+                    let valueMarker = mouseGroup
+                    .append('image')
+                    .attr('xlink:href', url = './icons/developer.png')
                     .attr("id","valueMarker")
                     .attr("fill","none")
                     .attr("stroke","steelblue")
                     .attr("stroke-width",2)
-                    .attr("r",6)
+                    .attr("width",50)
+                    .attr("height",50)
                     .attr("visibility","hidden");
 
                 let label = mouseGroup.append("text")
                     .attr("id","label")
+                    .style("fill", "white")
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
@@ -514,7 +569,8 @@
                     let yPos =  salaryScale(d['salary']);
 
                     xMarker.attr("x1",xPos).attr("x2",xPos);
-                    valueMarker.attr("cx",xPos).attr("cy",yPos);
+                    // valueMarker.attr("cx",xPos).attr("cy",yPos);
+                    valueMarker.attr("x",xPos).attr("y",yPos);
 
                     let txt = "$" + d['salary']/1000 + "K";
 
@@ -547,6 +603,15 @@
 
 
             var menuDiv = d3.select("div#button");
+
+            var ButtonAll = menuDiv.append("button")
+                    .style("background-color", roleScale('all'))
+                    .style("font-weight", "bold")
+                    .text('ALL DEVELOPERS')
+                    .on('click', function(){
+                        updateLinePlot(surveyResult, 'all');
+                        updateBubblePlot(surveyResult, 'all');
+                    });
             var Button1 = menuDiv.append("button")
                     .style("background-color", roleScale('backend'))
                     .text("Backend developer")
@@ -602,14 +667,6 @@
                     .on('click', function(){
                         updateLinePlot(pm, 'pm');
                         updateBubblePlot(pm, 'pm');
-                    });
-            var Button9 = menuDiv.append("button")
-                    .style("background-color", roleScale('all'))
-                    .style("font-weight", "bold")
-                    .text('ALL DEVELOPERS')
-                    .on('click', function(){
-                        updateLinePlot(surveyResult, 'all');
-                        updateBubblePlot(surveyResult, 'all');
                     });
             function getRoleName(role) {
                 if(role==='backend'){
