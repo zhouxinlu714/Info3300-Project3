@@ -187,7 +187,7 @@
 
             //axis
             const yearGroupExtent = ['1-2 years','3-5 years','5-10 years','10-15 years','15-20 years','20+ years'];
-            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]);
+            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]).paddingInner(1).paddingOuter(0.1).align(0);
 
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
@@ -225,7 +225,7 @@
             let leftAxis = d3.axisLeft(salaryScale).tickFormat(function (d) {return "$"+ d/1000 + "K"});
             let leftAxisG = annotations.append("g")
                 .attr("class", "axisBrown")
-                .attr("transform", `translate(${margin.left - 10},${margin.top})`)
+                .attr("transform", `translate(${margin.left},${margin.top})`)
                 .call(leftAxis);
             let leftGridlines = d3.axisLeft(salaryScale)
                     .tickSize(-chartWidth-10)
@@ -238,7 +238,7 @@
             let bottomAxisG = annotations.append("g")
                 // .attr("class", "x axis")
                 .attr("class", "axisBrown")
-                .attr("transform", `translate(${margin.left},${chartHeight + margin.top + 10})`)
+                .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomAxis);
             
             // Add X axis label:
@@ -359,7 +359,7 @@
                 arcs.append("path")
                     .attr("fill",roleScale(role))
                     .attr("d", arc)
-                    .attr("stroke", "black")
+                    .attr("stroke", "white")
                     .style("stroke-width", "2px")
                 arcs.append("text")
                     .style("fill","white")
@@ -469,6 +469,18 @@
                                 .x( d => yearGroupScale(d['year_group']) + yearGroupScale.bandwidth() / 2 )
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
+                
+                chartArea.append("path")
+                .attr("class", "area")
+                .datum(year_salary_result)
+                .attr("fill", roleScale(role))
+                .attr("fill-opacity", .2)
+                .attr("stroke", "none")
+                .attr("d", d3.area()
+                    .x(function(d) { return yearGroupScale(d['year_group'])})
+                    .y0( chartHeight )
+                    .y1(function(d) { return salaryScale(d['salary']) })
+                    );
 
                 chartArea.append("path")
                         .datum(year_salary_result)
@@ -482,7 +494,7 @@
                     .data(year_salary_result)
                     .enter()
                     .append("circle")
-                    .attr("cx", d => yearGroupScale(d['year_group']) + yearGroupScale.bandwidth() / 2 )
+                    .attr("cx", d => yearGroupScale(d['year_group']))
                     .attr("cy", d => salaryScale(d['salary']))
                     .attr("fill", roleScale(role))
                     .attr("stroke", "#f0f0f0")
@@ -562,6 +574,7 @@
                     } else {
                         index = 5;
                     }
+
 
                     let d = year_salary_result[index];
                     // From there, it's just a matter of updating positions using our scales like we've done for a while now
