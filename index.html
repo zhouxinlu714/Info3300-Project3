@@ -14,12 +14,15 @@
         background-position: center; /* Center the image */
         background-repeat: no-repeat; /* Do not repeat the image */
         background-size: cover; 
+        margin: 0;
     }
 
     h1{
+        position: relative;
+        top:22px;
         text-align: center;
         font-weight: 800;
-        font-size: 50px;
+        font-size: 28px;
         color: rgb(255, 255, 255);
     }
     h3{
@@ -68,16 +71,15 @@
 
 
     button {
-      display: inline-block;
+      display:inline-block;
       color: white;
       font-family:'Roboto',sans-serif;
-      width: 12em;
-      /* height: 5em; */
-      /* height: 60px; */
+      width: 285px;
+      /* height: 150px; */
+      height: 50px;
       padding:0.5em 1.8em;
-      margin:0.1em 0.3em 0.3em 0.1em;
       border: 2px solid #EBDECF;
-      border-radius:2em;
+      border-radius:20px;
       word-spacing: normal;
       text-transform: none;
       text-indent: 0.5px;
@@ -86,16 +88,23 @@
       cursor: default;
       transition: all 0.2s;
       font-size: 15px;
-
+      margin-left: 20px;
+      margin-top: 3px;
+      box-shadow: 0 6px #A3B5D6;
     }
-
+    button:first-child{
+        margin-left: 50px;
+    }
     button:hover{
       border-color: rgb(126, 126, 126);
       opacity: 0.5;
     }
     button:focus{
-      border: 2px solid black;
-      outline: none;
+      text-decoration:underline;
+    }
+    button:active {
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
     }
     .slider.round {
         border-radius: 34px;
@@ -109,6 +118,16 @@
         top:40px;
         right: 14px;
         color:white;
+    }
+    .title {
+        height: 80px;
+        background-color: #597EF7;
+    }
+    .icon{
+        position: absolute;
+        top: 23px;
+        left:550px;
+
     }
     .switch {
         position: absolute;
@@ -162,20 +181,30 @@
         transform: translateX(36px);
         background-color: black;
     }
-
-    .area{
-    fill: url(#salary-gradient);
-    stroke-width: 0px;
-    opacity: 0.8;
+    .choosetype {
+        margin-left: 65px;
+        font-weight: 500;
+        color: rgb(204, 204, 204);
+        font-size: 24px;
     }
-
+    .area{
+        fill: url(#salary-gradient);
+        stroke-width: 0px;
+        opacity: 0.8;
+    }
 </style>
 <body>
-    <h1>US Developer Career Guide</h1>
+    <div class="title">
+        <h1>US Developer Career Guide</h1>
+    </div>
+    <div class="icon">
+        <img src="./icons/book_icon.svg" style="height: 28px;">
+    </div>
     <p class="mode" id="p1">Dark Mode</p>
     <h3> It may take 3-5 seconds to load the diagram due to the huge data </h3>
-    <h3>1. Choose your devloper type</h3>
-    <div id="button"></div>
+    <p class ="choosetype">Choose your developer type ...</p>
+    <div id="mybutton" ></div><br>
+    <div id="mybutton2"></div>
     <div class="container">
         <svg id = "line" height="600" width="800"></svg>
         <svg id = "anno" height="600" width="600"></svg>
@@ -193,7 +222,7 @@
             if(!checkBox.checked) {
                 document.getElementById("p1").innerHTML = "Light Mode";
                 stylesheet.cssRules[0].style.backgroundImage = "";
-                stylesheet.cssRules[1].style.color = "black";
+                //stylesheet.cssRules[1].style.color = "black";
                 stylesheet.cssRules[2].style.color = "black";
                 stylesheet.cssRules[9].style.cssText = "fill: black; font-size: 12px;";
                 stylesheet.cssRules[8].style.cssText = "stroke: black;";
@@ -201,8 +230,10 @@
                 stylesheet.cssRules[10].style.cssText = "stroke: black; stroke-width: 2px;";
                 stylesheet.cssRules[11].style.cssText = "fill: black;";
                 //stylesheet.cssRules[12].style.cssText = "display: inline-block; color: black; font-family: Roboto, sans-serif; width: 12em; padding: 0.5em 1.8em; margin: 0.1em 0.3em 0.3em 0.1em; border: 2px solid black; border-radius: 2em; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px;"
-                stylesheet.cssRules[17].style.color = "black";
-
+                //stylesheet.cssRules[17].style.color = "black";
+                //stylesheet.cssRules[12].style.cssTex = "display: inline-block; color: white; font-family: Roboto, sans-serif; width: 285px; height: 50px; padding: 0.5em 1.8em; border: 2px solid rgb(235, 222, 207); border-radius: 20px; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px; margin-left: 20px; margin-top: 3px; box-shadow: #E4EBF7 0px 6px;"
+                stylesheet.cssRules[12].style.boxShadow =  "#CCD7EE 0px 6px"
+                stylesheet.cssRules[29].style.color = "black";
             } 
             else {
                 document.getElementById("p1").innerHTML = "Dark Mode"
@@ -214,8 +245,10 @@
                 stylesheet.cssRules[7].style.cssText = "stroke: white;";
                 stylesheet.cssRules[10].style.cssText = "stroke: white; stroke-width: 2px;";
                 stylesheet.cssRules[11].style.cssText = "fill: white;";
-                stylesheet.cssRules[12].style.cssText = "display: inline-block; color: white; font-family: Roboto, sans-serif; width: 12em; padding: 0.5em 1.8em; margin: 0.1em 0.3em 0.3em 0.1em; border: 2px solid rgb(235, 222, 207); border-radius: 2em; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px;"
+                //stylesheet.cssRules[12].style.cssText = "display: inline-block; color: white; font-family: Roboto, sans-serif; width: 12em; padding: 0.5em 1.8em; margin: 0.1em 0.3em 0.3em 0.1em; border: 2px solid rgb(235, 222, 207); border-radius: 2em; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px;"
                 stylesheet.cssRules[17].style.color = "white";
+                stylesheet.cssRules[12].style.boxShadow =  "#A3B5D6 0px 6px"
+                stylesheet.cssRules[29].style.color = "rgb(204, 204, 204)";
             }
 
         }
@@ -589,6 +622,18 @@
                                 .x( d => yearGroupScale(d['year_group']))
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
+                
+                // chartArea.append("path")
+                // .attr("class", "area")
+                // .datum(year_salary_result)
+                // .attr("fill", roleScale(role))
+                // .attr("fill-opacity", .2)
+                // .attr("stroke", "none")
+                // .attr("d", d3.area()
+                //     .x(function(d) { return yearGroupScale(d['year_group'])})
+                //     .y0( chartHeight )
+                //     .y1(function(d) { return salaryScale(d['salary']) })
+                //     );
 
                 chartArea.append("path")
                         .datum(year_salary_result)
@@ -604,13 +649,11 @@
                     .append("circle")
                     .attr("cx", d => yearGroupScale(d['year_group']))
                     .attr("cy", d => salaryScale(d['salary']))
-                    // .curve(d3.curveMonotoneX);
                     .attr("fill", roleScale(role))
                     .attr("stroke", "#f0f0f0")
                     .attr("stroke-width", 1)
                     .attr("class", "lineCircle " + role)
                     .attr("r", 8);
-
 
             }
             function updateHover(data, role) {
@@ -706,7 +749,6 @@
                 chartArea.selectAll("." + role).attr("opacity", 1);
               }
             }
-
             function updateAreaPlot(data, role) {
                 year_salary = compute_salary_group (data);
                 let year_salary_result = []
@@ -734,7 +776,7 @@
                     .y0( chartHeight )
                     .y1(function(d) { return salaryScale(d['salary']) })
                     .curve(d3.curveMonotoneX)
-                
+
                 var rolecolor = roleScale(role)
                 console.log(rolecolor);
 
@@ -772,12 +814,14 @@
             addLinePlot(pm, 'pm');
             updateHover(pm, 'pm');
 
-            var menuDiv = d3.select("div#button");
+            var menuDiv = d3.select("div#mybutton");
+            var menuDiv2 = d3.select("div#mybutton2");
 
             var ButtonAll = menuDiv.append("button")
                     .style("background-color", roleScale('all'))
                     .style("font-weight", "bold")
                     .text('ALL DEVELOPERS')
+                    //.style("outline",roleScale('all'))
                     .on('click', function(){
                         updateLinePlot(surveyResult, 'all');
                         updateBubblePlot(surveyResult, 'all');
@@ -823,7 +867,7 @@
                         updateHover(dataScientistEngineer, 'dataScientistEngineer');
                         updateAreaPlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
-            var Button5 = menuDiv.append("button")
+            var Button5 = menuDiv2.append("button")
                     .style("background-color", roleScale('businessAnalyst'))
                     .text("Data or business analyst")
                     .on('click', function(){
@@ -833,7 +877,7 @@
                         updateHover(businessAnalyst, 'businessAnalyst');
                         updateAreaPlot(businessAnalyst, 'businessAnalyst');
                     });
-            var Button6 = menuDiv.append("button")
+            var Button6 = menuDiv2.append("button")
                     .style("background-color", roleScale('embedded'))
                     .text("Embedded software engineer")
                     .on('click', function(){
@@ -843,9 +887,9 @@
                         updateHover(embedded, 'embedded');
                         updateAreaPlot(embedded, 'embedded');
                     });
-            var Button7 = menuDiv.append("button")
+            var Button7 = menuDiv2.append("button")
                     .style("background-color", roleScale('devOps'))
-                    .text("DevOps or site reliability engineer")
+                    .text("DevOps/site reliability engineer")
                     .on('click', function(){
                         updateLinePlot(devOps, 'devOps');
                         updateBubblePlot(devOps, 'devOps');
@@ -853,7 +897,7 @@
                         updateHover(devOps, 'devOps');
                         updateAreaPlot(devOps, 'devOps');
                     });
-            var Button8 = menuDiv.append("button")
+            var Button8 = menuDiv2.append("button")
                     .style("background-color", roleScale('pm'))
                     .text("Product manager")
                     .on('click', function(){
