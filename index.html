@@ -162,6 +162,13 @@
         transform: translateX(36px);
         background-color: black;
     }
+
+    .area{
+    fill: url(#salary-gradient);
+    stroke-width: 0px;
+    opacity: 0.8;
+    }
+
 </style>
 <body>
     <h1>US Developer Career Guide</h1>
@@ -298,7 +305,7 @@
 
             //axis
             const yearGroupExtent = ['1-2 years','3-5 years','5-10 years','10-15 years','15-20 years','20+ years'];
-            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]).paddingInner(1).paddingOuter(0.1).align(0);
+            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]).paddingInner(1).paddingOuter(0.2).align(0);
 
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
@@ -579,21 +586,9 @@
 
                 var lineGen = d3.line()
                                 .defined(d => !isNaN(d.salary))
-                                .x( d => yearGroupScale(d['year_group']) + yearGroupScale.bandwidth() / 2 )
+                                .x( d => yearGroupScale(d['year_group']))
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
-                
-                chartArea.append("path")
-                .attr("class", "area")
-                .datum(year_salary_result)
-                .attr("fill", roleScale(role))
-                .attr("fill-opacity", .2)
-                .attr("stroke", "none")
-                .attr("d", d3.area()
-                    .x(function(d) { return yearGroupScale(d['year_group'])})
-                    .y0( chartHeight )
-                    .y1(function(d) { return salaryScale(d['salary']) })
-                    );
 
                 chartArea.append("path")
                         .datum(year_salary_result)
@@ -609,11 +604,13 @@
                     .append("circle")
                     .attr("cx", d => yearGroupScale(d['year_group']))
                     .attr("cy", d => salaryScale(d['salary']))
+                    // .curve(d3.curveMonotoneX);
                     .attr("fill", roleScale(role))
                     .attr("stroke", "#f0f0f0")
                     .attr("stroke-width", 1)
                     .attr("class", "lineCircle " + role)
                     .attr("r", 8);
+
 
             }
             function updateHover(data, role) {
@@ -639,8 +636,8 @@
                     .attr("fill","none")
                     .attr("stroke","steelblue")
                     .attr("stroke-width",2)
-                    .attr("width",50)
-                    .attr("height",50)
+                    .attr("width",40)
+                    .attr("height",40)
                     .attr("visibility","hidden");
 
                 let label = mouseGroup.append("text")
@@ -710,6 +707,60 @@
               }
             }
 
+            function updateAreaPlot(data, role) {
+                year_salary = compute_salary_group (data);
+                let year_salary_result = []
+                for(i=0;i<yearGroupExtent.length;i++) {
+                    let year_group = yearGroupExtent[i];
+                    year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
+                }
+
+                // chartArea.selectAll(".area").remove()
+                // chartArea.append("path")
+                // .attr("class", "area")
+                // .datum(year_salary_result)
+                // .attr("fill", roleScale(role))
+                // .attr("fill-opacity", .3)
+                // .attr("stroke", "none")
+                // .attr("d", d3.area()
+                //     .x(function(d) { return yearGroupScale(d['year_group'])})
+                //     .y0( chartHeight )
+                //     .y1(function(d) { return salaryScale(d['salary']) })
+                //     .curve(d3.curveMonotoneX)
+                //     );
+
+                var area = d3.area()
+                    .x(function(d) { return yearGroupScale(d['year_group'])})
+                    .y0( chartHeight )
+                    .y1(function(d) { return salaryScale(d['salary']) })
+                    .curve(d3.curveMonotoneX)
+                
+                var rolecolor = roleScale(role)
+                console.log(rolecolor);
+
+                chartArea.selectAll("#salary-gradient").remove()
+                chartArea.append("linearGradient")
+                .attr("id", "salary-gradient")
+                .attr("gradientUnits", "userSpaceOnUse")
+                .attr("x1", '0%').attr('y1', '0%')
+                .attr("x2", '0%').attr('y2', '100%')
+                .selectAll("stop")
+                .data([
+                {offset: "0%", color: rolecolor},
+                {offset: "100%", color: "transparent"}
+                ])
+                .enter().append("stop")
+                .attr("offset", function(d) { return d.offset; })
+                .attr("stop-color", function(d) { return d.color; });
+
+                chartArea.selectAll(".area").remove()
+                chartArea.append("path")
+                .lower()
+                .datum(year_salary_result)
+                .attr("class", "area")
+                .attr("d", area);
+
+            }
             // draw all plots
             addLinePlot(backend, 'backend');
             addLinePlot(frontend, 'frontend');
@@ -730,6 +781,7 @@
                     .on('click', function(){
                         updateLinePlot(surveyResult, 'all');
                         updateBubblePlot(surveyResult, 'all');
+                        chartArea.selectAll(".area").remove()
                     });
             var Button1 = menuDiv.append("button")
                     .style("background-color", roleScale('backend'))
@@ -739,6 +791,7 @@
                         updateBubblePlot(backend, 'backend');
                         //addLinePlot(backend, 'backend');
                         updateHover(backend, 'backend');
+                        updateAreaPlot(backend, 'backend');
                     });
             var Button2 = menuDiv.append("button")
                     .style("background-color", roleScale('frontend'))
@@ -748,6 +801,7 @@
                         updateBubblePlot(frontend, 'frontend');
                         //addLinePlot(frontend, 'frontend');
                         updateHover(frontend, 'frontend');
+                        updateAreaPlot(frontend, 'frontend');
                     });
             var Button3 = menuDiv.append("button")
                     .style("background-color", roleScale('fullstack'))
@@ -757,6 +811,7 @@
                         updateBubblePlot(fullstack, 'fullstack');
                         //addLinePlot(fullstack, 'fullstack');
                         updateHover(fullstack, 'fullstack');
+                        updateAreaPlot(fullstack, 'fullstack');
                     });
             var Button4 = menuDiv.append("button")
                     .style("background-color", roleScale('dataScientistEngineer'))
@@ -766,6 +821,7 @@
                         updateBubblePlot(dataScientistEngineer, 'dataScientistEngineer');
                         //addLinePlot(dataScientistEngineer, 'dataScientistEngineer');
                         updateHover(dataScientistEngineer, 'dataScientistEngineer');
+                        updateAreaPlot(dataScientistEngineer, 'dataScientistEngineer');
                     });
             var Button5 = menuDiv.append("button")
                     .style("background-color", roleScale('businessAnalyst'))
@@ -775,6 +831,7 @@
                         updateBubblePlot(businessAnalyst, 'businessAnalyst');
                         //addLinePlot(businessAnalyst, 'businessAnalyst');
                         updateHover(businessAnalyst, 'businessAnalyst');
+                        updateAreaPlot(businessAnalyst, 'businessAnalyst');
                     });
             var Button6 = menuDiv.append("button")
                     .style("background-color", roleScale('embedded'))
@@ -784,6 +841,7 @@
                         updateBubblePlot(embedded, 'embedded');
                         //addLinePlot(embedded, 'embedded');
                         updateHover(embedded, 'embedded');
+                        updateAreaPlot(embedded, 'embedded');
                     });
             var Button7 = menuDiv.append("button")
                     .style("background-color", roleScale('devOps'))
@@ -793,6 +851,7 @@
                         updateBubblePlot(devOps, 'devOps');
                         //addLinePlot(devOps, 'devOps');
                         updateHover(devOps, 'devOps');
+                        updateAreaPlot(devOps, 'devOps');
                     });
             var Button8 = menuDiv.append("button")
                     .style("background-color", roleScale('pm'))
@@ -802,6 +861,7 @@
                         updateBubblePlot(pm, 'pm');
                         //addLinePlot(pm, 'pm');
                         updateHover(pm, 'pm');
+                        updateAreaPlot(pm, 'pm');
                     });
             function getRoleName(role) {
                 if(role==='backend'){
