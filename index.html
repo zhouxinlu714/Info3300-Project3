@@ -771,7 +771,7 @@
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
-                    .attr("width",chartWidth)
+                    .attr("width",chartWidth+margin.right)
                     .attr("height",chartHeight)
                     .attr("fill","none")
                     .attr("pointer-events","all");
