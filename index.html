@@ -7,13 +7,13 @@
     body{
         font-family: Arial, Helvetica, sans-serif;
         /* background-color: #1f2022; */
-        background-image:  linear-gradient(45deg, 
-            rgba(3, 41, 58, 0.815), 
+        background-image:  linear-gradient(45deg,
+            rgba(3, 41, 58, 0.815),
             rgba(17, 23, 43, 0.877)
             ),url(./icons/background.jpg);
         background-position: center; /* Center the image */
         background-repeat: no-repeat; /* Do not repeat the image */
-        background-size: cover; 
+        background-size: cover;
         margin: 0;
     }
 
@@ -139,7 +139,7 @@
         height: 34px;
     }
 
-    .switch input { 
+    .switch input {
         opacity: 0;
         width: 0;
         height: 0;
@@ -197,6 +197,9 @@
         fill: rgb(226, 252, 255);
         font-size: 20px;
     }
+    .tooltip {
+      font: 12px Helvetica;
+    }
 </style>
 <body>
     <div class="title">
@@ -211,7 +214,7 @@
     <p class ="choosetype">Choose your developer type below...</p>
     <div id="mybutton" ></div><br>
     <div id="mybutton2"></div>
-    <div class="container">
+    <div id = "container" class="container">
         <svg id = "line" height="600" width="800"></svg>
         <svg id = "anno" height="600" width="600"></svg>
     </div>
@@ -241,7 +244,7 @@
                 stylesheet.cssRules[12].style.boxShadow =  "#CCD7EE 0px 6px"
                 stylesheet.cssRules[29].style.color = "black";
                 stylesheet.cssRules[31].style.cssText = "fill: black;font-size: 20px;";
-            } 
+            }
             else {
                 document.getElementById("p1").innerHTML = "Dark Mode"
                 stylesheet.cssRules[0].style.backgroundImage ="linear-gradient(45deg, rgba(3, 41, 58, 0.816), rgba(17, 23, 43, 0.88)), url('./icons/background.jpg')"
@@ -400,7 +403,7 @@
                 .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomAxis);
-            
+
             // Add title
             linesvg.append("text")
                 .attr("class", "chartTitle")
@@ -533,11 +536,43 @@
                     .append("g")
                     .attr("transform", "translate(" + 250 + "," + 360 + ")");
 
+                // count total valid edu items
+                var total = 0;
+                for (var i = 0;i<data_ready.length;i++){
+                  total += data_ready[i].data.value;
+                };
+
                 // Appending path
                 arcs.append("path")
                     .attr("fill",d => pieroleScale(d.data.value))
                     .attr("d", arc)
                     .attr("class","arc_path")
+                    .on("mouseover", (event, d) => {
+                      tooltip.style("left", event.pageX + 10 + "px")
+                        .style("top", event.pageY - 25 + "px")
+                        .style("display", "inline-block")
+                        .html(d.data.key + ": " + Math.round(d.data.value/total*100) + "%");
+                    })
+                    .on("mousemove", (event, d) => {
+                      tooltip
+                      .style("left", (event.pageX+10) + "px")
+                      .style("top", (event.pageY-25) + "px")
+                    })
+                    .on("mouseleave", (event, d) => {
+                      tooltip.style("display", "none");
+                    });
+
+                // pie chart tooltip
+                var tooltip = d3.select("#container").append("div")
+                  .attr("class", "tooltip")
+                  .style("background-color", "white")
+                  .style("border", "solid")
+                  .style("border-width", "1px")
+                  .style("border-radius", "5px")
+                  .style("padding", "10px")
+                  .style("position", "absolute")
+                  .style("display", "none");
+
                 arcs.append("text")
                     .attr("class","arc_text")
                     .attr("transform",(d)=>{
@@ -652,7 +687,7 @@
                                 .x( d => yearGroupScale(d['year_group']))
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
-                
+
                 // chartArea.append("path")
                 // .attr("class", "area")
                 // .datum(year_salary_result)
@@ -719,10 +754,14 @@
                     .attr("stroke-width",2)
                     .attr("r",10)
                     .attr("visibility","hidden");
-                
+
                 let label = mouseGroup.append("text")
                     .attr("id","label")
                     .attr("class","arc_text")
+                    .attr("visibility","hidden");
+                let label2 = mouseGroup.append("text")
+                    .attr("id","label2")
+                    .attr("class","arc_textå")
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
@@ -738,6 +777,7 @@
                     valueMarker.attr("visibility","");
                     valueMarker2.attr("visibility","");
                     label.attr("visibility","");
+                    label2.attr("visibility","");
                 });
                 activeRegion.on("mouseout", function() {
                     // Hide them when mousing out of chart
@@ -745,6 +785,7 @@
                     valueMarker.attr("visibility","hidden");
                     valueMarker2.attr("visibility","hidden");
                     label.attr("visibility","hidden");
+                    label2.attr("visibility","hidden");
                 });
                 activeRegion.on("mousemove", function(evt) {
                     // // Get mouse location
@@ -771,10 +812,24 @@
                     xMarker.attr("x1",xPos).attr("x2",xPos);
                     valueMarker2.attr("cx",xPos).attr("cy",yPos);
                     valueMarker.attr("x",xPos).attr("y",yPos+10);
+                    if (index === 5){
+                      valueMarker.attr("x",xPos-40).attr("y",yPos);
+                    }
 
                     let txt = "$" + d['salary']/1000 + "K";
 
                     label.text(txt).attr("class","arc_text").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                    if (role === 'all'){
+                      label2.text("Median for all: ").attr("class","arc_text").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", "-1em");
+                    }
+
+                    if (index === 5){
+                      label.text(txt).attr("class","arc_text").attr("x",xPos-10).attr("y",yPos+2).attr("text-anchor","end").attr("dy", ".35em");
+                      if (role === 'all'){
+                        label2.text("Median for all: ").attr("class","arc_text").attr("x",xPos-10).attr("y",yPos+2).attr("text-anchor","end").attr("dy", "-1em");
+                      }
+                    }
+
                     valueMarker.attr("visibility","");
                     valueMarker2.attr("visibility","");
                 });
@@ -852,7 +907,7 @@
             addLinePlot(embedded, 'embedded');
             addLinePlot(devOps, 'devOps');
             addLinePlot(pm, 'pm');
-            updateHover(pm, 'pm');
+            updateHover(surveyResult, 'all');
 
             var menuDiv = d3.select("div#mybutton");
             var menuDiv2 = d3.select("div#mybutton2");
@@ -865,8 +920,9 @@
                     .on('click', function(){
                         updateLinePlot(surveyResult, 'all');
                         updateBubblePlot(surveyResult, 'all');
+                        updateHover(surveyResult, 'all');
                         chartArea.selectAll(".area").remove()
-                        
+
                     });
             var Button1 = menuDiv.append("button")
                     .style("background-color", roleScale('backend'))
