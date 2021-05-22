@@ -222,7 +222,7 @@
     <div id="mybutton" ></div><br>
     <div id="mybutton2"></div>
     <div id = "container" class="container">
-        <svg id = "line" height="600" width="800"></svg>
+        <svg id = "line" height="600" width="900" style="margin-left:20px"></svg>
         <svg id = "anno" height="600" width="600"></svg>
     </div>
     <label class="switch">
@@ -274,8 +274,8 @@
         const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
         const height = linesvg.attr("height");
-        const margin = {top: 70, right: 10, bottom: 60, left: 90};
-        const chartWidth = width - margin.left - margin.right;
+        const margin = {top: 70, right: 60, bottom: 60, left: 90};
+        const chartWidth = width - margin.left-margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const ranksWidth = annosvg.attr("width");
         const ranksHeight = annosvg.attr("height");
@@ -287,8 +287,7 @@
                         .attr("transform",`translate(${margin.left},${margin.top})`);
         let ranksChartArea = annosvg.append("g").attr("id","ranks")
                         .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
-        // let iconsArea = annosvg.append("g").attr("id","icons")
-        //                 .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
+
 
         d3.csv("./survey_results_public.csv", d3.autoType).then(data => {
             //import dataset
@@ -772,7 +771,7 @@
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
-                    .attr("width",chartWidth)
+                    .attr("width",chartWidth+margin.right)
                     .attr("height",chartHeight)
                     .attr("fill","none")
                     .attr("pointer-events","all");
