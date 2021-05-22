@@ -6,13 +6,12 @@
 <style>
     body{
         font-family: Arial, Helvetica, sans-serif;
-        /* background-color: #1f2022; */
         background-image:  linear-gradient(45deg,
             rgba(3, 41, 58, 0.815),
             rgba(17, 23, 43, 0.877)
             ),url(./icons/background.jpg);
-        background-position: center; /* Center the image */
-        background-repeat: no-repeat; /* Do not repeat the image */
+        background-position: center; 
+        background-repeat: no-repeat; 
         background-size: cover;
         margin: 0;
     }
@@ -74,7 +73,6 @@
       color: white;
       font-family:'Roboto',sans-serif;
       width: 285px;
-      /* height: 150px; */
       height: 50px;
       padding:0.5em 1.8em;
       border: 2px solid #EBDECF;
@@ -295,22 +293,20 @@
             var surveyResult = data
             console.log(surveyResult)
 
-            //clean dataset 64464=>7362
+            //clean dataset 64461=>7715
             surveyResult = surveyResult.map(function(obj) {
                     return {
                         Country: obj.Country,
                         DevType: obj.DevType,
-                        Gender: obj.Gender,
                         EdLevel: obj.EdLevel,
                         LanguageWorkedWith: obj.LanguageWorkedWith,
                         Salary: obj.ConvertedComp,
-                        YearsCode: obj.YearsCode,
                         YearsCodePro: obj.YearsCodePro
                     }
                     });
 
              // clean data
-            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['Gender'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA'&& d['Salary'] != 'NA' && d['Salary'] != 0 && d['YearsCode'] != 'NA' && d['YearsCodePro'] != 'NA' });
+            surveyResult = surveyResult.filter((d) => { return d['Country'] === 'United States' && d['Salary'] != 'NA' && d['DevType'] != 'NA' && d['EdLevel'] != 'NA' && d['LanguageWorkedWith'] != 'NA'&& d['Salary'] != 'NA' && d['Salary'] != 0 && d['YearsCodePro'] != 'NA' });
             console.log(surveyResult)
             var backend = [];
             var frontend = [];
@@ -353,6 +349,7 @@
                 })
             })
             console.log("survey result", surveyResult)
+            console.log(pm)
 
             //axis
             const yearGroupExtent = ['1-2 years','3-5 years','5-10 years','10-15 years','15-20 years','20+ years'];
@@ -360,8 +357,6 @@
 
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
-
-            //const roleScale = d3.scaleOrdinal(d3.schemeTableau10);
             const roleScale = d3.scaleOrdinal().domain(["all","backend","frontend","fullstack","embedded","dataScientistEngineer","businessAnalyst","devOps","pm"]).range(["#597EF7","#FAAD14","#FF7946","#F5222D","#7CB305","#4152A7","#9254DC","#A3B5D6","#E9BABF"]);
 
             function compute_salary_group (data) {
@@ -435,6 +430,20 @@
                 .attr("x", -margin.top)
                 .text("Median salary(USD)")
 
+             // pie chart title
+             annosvg.append("text")
+                .attr("class", "chartTitle")
+                .attr("x", ranksWidth / 2 )
+                .attr("y", ranksMargin.top/2 +210 )
+                .style("text-anchor", "middle")
+                .text("Educational Attainment");
+            //rankchart title
+            annosvg.append("text")
+                .attr("class", "chartTitle")
+                .attr("x", ranksWidth / 2 )
+                .attr("y", ranksMargin.top/2 +10 )
+                .style("text-anchor", "middle")
+                .text("Most Populat Languages by Developer Type");
             function updateBubblePlot(data, role) {
                 var rolename = getRoleName(role);  // get full role name
                 var language_dict = {};  // count LanguageWorkedWith
@@ -489,14 +498,6 @@
                     .attr("r", (d,i) => radiusScale(i));
 
                 // pie chart
-                // pie chart title
-                annosvg.append("text")
-                .attr("class", "chartTitle")
-                .attr("x", ranksWidth / 2 )
-                .attr("y", ranksMargin.top/2 +210 )
-                .style("text-anchor", "middle")
-                .text("Educational Attainment");
-
                 var edu_dict = {};
                 data.forEach(d=>{
                     d.EdLevel+="(";
@@ -545,27 +546,42 @@
                   total += data_ready[i].data.value;
                 };
 
-                // Appending path
-                arcs.append("path")
+                    let mouseover = function (d) {
+                    annosvg.selectAll("path")
+                        .transition().duration(200)
+                        .style("opacity", 0.5)
+                    d3.select(this)
+                        .transition().duration(200)
+                        .style("opacity", 1);
+
+                        tooltip.style("left", d.pageX + 10 + "px")
+                        .style("top", d.pageY - 25 + "px")
+                        .style("display", "inline-block")
+                        .style("display", "inline-block")
+                        .style("opacity", 1)
+                        .html(d3.select(this).datum().data.key  + ": " + Math.round(d3.select(this).datum().data.value/total*100) + "%");
+                    }
+
+                    let mousemove = function (d) {
+                    tooltip
+                        .style("left", (d3.select(this)[0]+15) + "px")
+                        .style("top", (d3.select(this)[1]-25) + "px")
+                    }
+
+                    let mouseleave = function (d) {
+                    tooltip.style("display", "none");
+                    annosvg.selectAll("path")
+                    .transition().duration(200)
+                    .style("opacity", 1)
+                    }
+
+                    arcs.append("path")
                     .attr("fill",d => pieroleScale(d.data.value))
                     .attr("d", arc)
                     .attr("class","arc_path")
-                    .on("mouseover", (event, d) => {
-                      console.log(d3.select(this))
-                      tooltip.style("left", event.pageX + 10 + "px")
-                        .style("top", event.pageY - 25 + "px")
-                        .style("display", "inline-block")
-                        .html(d.data.key + ": " + Math.round(d.data.value/total*100) + "%");
-                    })
-                    .on("mousemove", (event, d) => {
-                      tooltip
-                      .style("left", (event.pageX+10) + "px")
-                      .style("top", (event.pageY-25) + "px")
-                    })
-                    .on("mouseleave", (event, d) => {
-                      tooltip.style("display", "none");
-                    });
-
+                    .on("mouseover", mouseover)
+                    .on("mousemove", mousemove)
+                    .on("mouseleave", mouseleave);
 
                 arcs.append("text")
                     .attr("class","arc_text")
@@ -606,13 +622,6 @@
                     var img=new Image();
                     img.src=url;
                 }
-                //rankchart title
-                annosvg.append("text")
-                .attr("class", "chartTitle")
-                .attr("x", ranksWidth / 2 )
-                .attr("y", ranksMargin.top/2 +10 )
-                .style("text-anchor", "middle")
-                .text("Most Populat Languages by Developer Type");
 
                 function getIconPath (languageName){
                     // Turn "Bash/Shell/PowerShell" into "bash_shell_powershell"
@@ -622,7 +631,6 @@
                     } else if (languageName == "c++") {
                         languageName = "Cpp";
                     }
-                    //console.log(languageName);
                     return link = './icons/languages/' + languageName + '.png'
                 }
 
@@ -645,7 +653,6 @@
                 .attr("x", (d,i) => rankAxisScale(i))
                 .attr("y", 10)
                 .text(function(d) { return d[0]; })
-
 
                 ranksChartArea.selectAll("circle").select(".iconCircle")
                 .data(sorted_languages)
@@ -672,10 +679,7 @@
                     return 'translate(0,5)';
                   }
                 });
-
                 }
-
-
 
             // update function passing data
             function addLinePlot(data, role) {
@@ -691,18 +695,6 @@
                                 .x( d => yearGroupScale(d['year_group']))
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
-
-                // chartArea.append("path")
-                // .attr("class", "area")
-                // .datum(year_salary_result)
-                // .attr("fill", roleScale(role))
-                // .attr("fill-opacity", .2)
-                // .attr("stroke", "none")
-                // .attr("d", d3.area()
-                //     .x(function(d) { return yearGroupScale(d['year_group'])})
-                //     .y0( chartHeight )
-                //     .y1(function(d) { return salaryScale(d['salary']) })
-                //     );
 
                 chartArea.append("path")
                         .datum(year_salary_result)
@@ -861,20 +853,6 @@
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
-
-                // chartArea.selectAll(".area").remove()
-                // chartArea.append("path")
-                // .attr("class", "area")
-                // .datum(year_salary_result)
-                // .attr("fill", roleScale(role))
-                // .attr("fill-opacity", .3)
-                // .attr("stroke", "none")
-                // .attr("d", d3.area()
-                //     .x(function(d) { return yearGroupScale(d['year_group'])})
-                //     .y0( chartHeight )
-                //     .y1(function(d) { return salaryScale(d['salary']) })
-                //     .curve(d3.curveMonotoneX)
-                //     );
 
                 var area = d3.area()
                     .x(function(d) { return yearGroupScale(d['year_group'])})
@@ -1043,7 +1021,6 @@
                 }
                 return rolename;
             }
-
             // draw default bubble plot & pie chart
             updateBubblePlot(surveyResult, 'all');
 
