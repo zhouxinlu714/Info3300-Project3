@@ -200,6 +200,9 @@
     .tooltip {
       font: 12px Helvetica;
     }
+    .hoverline{
+        stroke:white;
+    }
 
 
 </style>
@@ -253,6 +256,7 @@
                 stylesheet.cssRules[29].style.color = "black";
                 stylesheet.cssRules[31].style.cssText = "fill: black;font-size: 20px;";
                 stylesheet.cssRules[20].style.backgroundColor = "rgb(89, 126, 247)";
+                stylesheet.cssRules[33].style.cssText = "stroke: black;";
             }
             else {
                 document.getElementById("p1").innerHTML = "Dark Mode"
@@ -270,6 +274,7 @@
                 stylesheet.cssRules[29].style.color = "rgb(204, 204, 204)";
                 stylesheet.cssRules[31].style.cssText = "fill: rgb(226, 252, 255);font-size: 20px;";
                 stylesheet.cssRules[20].style.backgroundColor = "rgb(9, 28, 43)"
+                stylesheet.cssRules[33].style.cssText = "stroke: white;";
             }
 
         }
@@ -739,8 +744,7 @@
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
-                    .attr("fill","none")
-                    .attr("stroke","white")
+                    .attr("class","hoverline")
                     .attr("stroke-width",1)
                     .attr("y1",0)
                     .attr("y2",chartHeight)
@@ -770,7 +774,7 @@
                     .attr("visibility","hidden");
                 let label2 = mouseGroup.append("text")
                     .attr("id","label2")
-                    .attr("class","arc_textå")
+                    .attr("class","arc_text")
                     .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
