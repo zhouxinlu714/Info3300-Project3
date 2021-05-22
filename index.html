@@ -68,10 +68,6 @@
     .arc_text{
         fill:white;
     }
-    .tooltip {
-      font: 12px Helvetica;
-    }
-
 
     button {
       display:inline-block;
@@ -200,6 +196,11 @@
         fill: rgb(226, 252, 255);
         font-size: 20px;
     }
+
+    .tooltip {
+      font: 12px Helvetica;
+    }
+
 
 </style>
 <script type="text/javascript">
@@ -355,7 +356,7 @@
 
             //axis
             const yearGroupExtent = ['1-2 years','3-5 years','5-10 years','10-15 years','15-20 years','20+ years'];
-            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]).paddingInner(1).paddingOuter(0.2).align(0);
+            const yearGroupScale = d3.scaleBand().domain(yearGroupExtent).range([0, chartWidth]).paddingInner(1).paddingOuter(0.1).align(0);
 
             const salaryExtent = d3.extent(surveyResult, d => d['Salary']);
             const salaryScale = d3.scaleLinear().domain([70000,180000]).range([chartHeight, 0]);
