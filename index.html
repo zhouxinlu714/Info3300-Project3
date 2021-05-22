@@ -27,7 +27,7 @@
     }
     h3{
         text-align: center;
-        font-weight: 500;
+        font-weight: 400;
         color: rgb(204, 204, 204);
     }
 
@@ -103,7 +103,8 @@
       opacity: 0.5;
     }
     button:focus{
-      text-decoration:underline;
+      text-decoration:none;
+      outline: none;
     }
     button:active {
         box-shadow: 0 5px #666;
@@ -195,17 +196,23 @@
         stroke-width: 0px;
         opacity: 0.8;
     }
+    .chartTitle{
+        fill: rgb(226, 252, 255);
+        font-size: 20px;
+    }
 </style>
 <body>
     <div class="title">
         <h1>US Developer Career Guide</h1>
     </div>
-    <!-- <div class="icon">
-        <img src="./icons/book_icon.svg" style="height: 28px;">
-    </div> -->
+
+    <div class="icon">
+        <!-- <img src="./icons/book_icon.svg" style="height: 28px;"> -->
+        <img src="./icons/book.png" style="height: 45px;">
+    </div>
     <p class="mode" id="p1">Dark Mode</p>
-    <h3> It may take 3-5 seconds to load the diagram due to the huge data </h3>
-    <p class ="choosetype">Choose your developer type ...</p>
+    <h3> ***It may take 3-5 seconds to load the diagram due to the huge data*** </h3>
+    <p class ="choosetype">Choose your developer type below...</p>
     <div id="mybutton" ></div><br>
     <div id="mybutton2"></div>
     <div id = "container" class="container">
@@ -224,10 +231,10 @@
             console.log(stylesheet);
             if(!checkBox.checked) {
                 document.getElementById("p1").innerHTML = "Light Mode";
-                stylesheet.cssRules[0].style.backgroundImage = "";
+                stylesheet.cssRules[0].style.backgroundImage = "linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%)";
                 //stylesheet.cssRules[1].style.color = "black";
                 stylesheet.cssRules[2].style.color = "black";
-                stylesheet.cssRules[9].style.cssText = "fill: black; font-size: 12px;";
+                stylesheet.cssRules[9].style.cssText = "fill: black;";
                 stylesheet.cssRules[8].style.cssText = "stroke: black;";
                 stylesheet.cssRules[7].style.cssText = "stroke: black;";
                 stylesheet.cssRules[10].style.cssText = "stroke: black; stroke-width: 2px;";
@@ -237,7 +244,8 @@
                 //stylesheet.cssRules[12].style.cssTex = "display: inline-block; color: white; font-family: Roboto, sans-serif; width: 285px; height: 50px; padding: 0.5em 1.8em; border: 2px solid rgb(235, 222, 207); border-radius: 20px; word-spacing: normal; text-transform: none; text-indent: 0.5px; text-shadow: none; text-align: center; cursor: default; transition: all 0.2s ease 0s; font-size: 15px; margin-left: 20px; margin-top: 3px; box-shadow: #E4EBF7 0px 6px;"
                 stylesheet.cssRules[12].style.boxShadow =  "#CCD7EE 0px 6px"
                 stylesheet.cssRules[29].style.color = "black";
-            }
+                stylesheet.cssRules[31].style.cssText = "fill: black;font-size: 20px;";
+            } 
             else {
                 document.getElementById("p1").innerHTML = "Dark Mode"
                 stylesheet.cssRules[0].style.backgroundImage ="linear-gradient(45deg, rgba(3, 41, 58, 0.816), rgba(17, 23, 43, 0.88)), url('./icons/background.jpg')"
@@ -252,6 +260,7 @@
                 stylesheet.cssRules[17].style.color = "white";
                 stylesheet.cssRules[12].style.boxShadow =  "#A3B5D6 0px 6px"
                 stylesheet.cssRules[29].style.color = "rgb(204, 204, 204)";
+                stylesheet.cssRules[31].style.cssText = "fill: rgb(226, 252, 255);font-size: 20px;";
             }
 
         }
@@ -264,7 +273,7 @@
         const chartHeight = height - margin.top - margin.bottom;
         const ranksWidth = annosvg.attr("width");
         const ranksHeight = annosvg.attr("height");
-        const ranksMargin = {top: 30, right: 10, bottom: 10, left: 60};
+        const ranksMargin = {top: 70, right: 10, bottom: 10, left: 60};
         const ranksChartWidth = ranksWidth - ranksMargin.left - ranksMargin.right;
         const ranksChartHeight = ranksHeight - ranksMargin.top - ranksMargin.bottom;
         let annotations = linesvg.append("g").attr("id","annotations");
@@ -394,7 +403,15 @@
                 .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomAxis);
-
+ 
+            // Add title
+            linesvg.append("text")
+                .attr("class", "chartTitle")
+                .attr("x", width / 2 )
+                .attr("y", margin.top/2+ 10)
+                .style("text-anchor", "middle")
+                .text("Median Salaray by Years of Experience");
+          
             // Add X axis label:
             linesvg.append("text")
                 .attr("text-anchor", "end")
@@ -466,6 +483,14 @@
                     .attr("r", (d,i) => radiusScale(i));
 
                 // pie chart
+                // pie chart title
+                annosvg.append("text")
+                .attr("class", "chartTitle")
+                .attr("x", ranksWidth / 2 )
+                .attr("y", ranksMargin.top/2 +210 )
+                .style("text-anchor", "middle")
+                .text("Educational Attainment");
+
                 var edu_dict = {};
                 data.forEach(d=>{
                     d.EdLevel+="(";
@@ -481,8 +506,8 @@
                 edu_items.sort(function(first, second) {return second[1] - first[1]});
 
                 var arc = d3.arc()
-                            .innerRadius(120)
-                            .outerRadius(150);
+                            .innerRadius(110)
+                            .outerRadius(140);
                 var edu_list = []
                 var others = 0;
                 var max = 0;
@@ -575,6 +600,13 @@
                     var img=new Image();
                     img.src=url;
                 }
+                //rankchart title
+                annosvg.append("text")
+                .attr("class", "chartTitle")
+                .attr("x", ranksWidth / 2 )
+                .attr("y", ranksMargin.top/2 +10 )
+                .style("text-anchor", "middle")
+                .text("Most Populat Languages by Developer Type");
 
                 function getIconPath (languageName){
                     // Turn "Bash/Shell/PowerShell" into "bash_shell_powershell"
@@ -684,8 +716,7 @@
                     .attr("stroke", "#f0f0f0")
                     .attr("stroke-width", 1)
                     .attr("class", "lineCircle " + role)
-                    .attr("r", 8);
-
+                    .attr("r", 6)
             }
             function updateHover(data, role) {
                 year_salary = compute_salary_group (data);
@@ -711,12 +742,20 @@
                     .attr('xlink:href', url = './icons/developer.png')
                     .attr("id","valueMarker")
                     .attr("fill","none")
-                    .attr("stroke","steelblue")
                     .attr("stroke-width",2)
                     .attr("width",40)
                     .attr("height",40)
                     .attr("visibility","hidden");
 
+                let valueMarker2 = mouseGroup
+                    .append('circle')
+                    .attr("id","valueMarker2")
+                    .attr("fill",roleScale(role))
+                    .attr("stroke","steelblue")
+                    .attr("stroke-width",2)
+                    .attr("r",10)
+                    .attr("visibility","hidden");
+                
                 let label = mouseGroup.append("text")
                     .attr("id","label")
                     .attr("class","arc_text")
@@ -737,6 +776,7 @@
                 // Show the marker and label when mousing over
                     xMarker.attr("visibility","");
                     valueMarker.attr("visibility","");
+                    valueMarker2.attr("visibility","");
                     label.attr("visibility","");
                     label2.attr("visibility","");
                 });
@@ -744,6 +784,7 @@
                     // Hide them when mousing out of chart
                     xMarker.attr("visibility","hidden");
                     valueMarker.attr("visibility","hidden");
+                    valueMarker2.attr("visibility","hidden");
                     label.attr("visibility","hidden");
                     label2.attr("visibility","hidden");
                 });
@@ -771,11 +812,13 @@
                     let yPos =  salaryScale(d['salary']);
 
                     xMarker.attr("x1",xPos).attr("x2",xPos);
+                  
                     // valueMarker.attr("cx",xPos).attr("cy",yPos);
                     valueMarker.attr("x",xPos).attr("y",yPos);
                     if (index === 5){
                       valueMarker.attr("x",xPos-40).attr("y",yPos);
                     }
+                    valueMarker2.attr("cx",xPos).attr("cy",yPos);
 
                     let txt = "$" + d['salary']/1000 + "K";
 
@@ -792,6 +835,7 @@
                     }
 
                     valueMarker.attr("visibility","");
+                    valueMarker2.attr("visibility","");
                 });
             }
             function updateLinePlot(data, role) {
@@ -881,6 +925,7 @@
                         updateBubblePlot(surveyResult, 'all');
                         updateHover(surveyResult, 'all');
                         chartArea.selectAll(".area").remove()
+                        
                     });
             var Button1 = menuDiv.append("button")
                     .style("background-color", roleScale('backend'))
