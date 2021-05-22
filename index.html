@@ -68,6 +68,9 @@
     .arc_text{
         fill:white;
     }
+    .tooltip {
+      font: 12px Helvetica;
+    }
 
 
     button {
@@ -205,6 +208,7 @@
     <div class="title">
         <h1>US Developer Career Guide</h1>
     </div>
+
     <div class="icon">
         <!-- <img src="./icons/book_icon.svg" style="height: 28px;"> -->
         <img src="./icons/book.png" style="height: 45px;">
@@ -383,7 +387,6 @@
             };
 
             var salary_groups = compute_salary_group (surveyResult);
-            console.log("salary_groups", salary_groups);
 
             let leftAxis = d3.axisLeft(salaryScale).tickFormat(function (d) {return "$"+ d/1000 + "K"});
             let leftAxisG = annotations.append("g")
@@ -411,6 +414,7 @@
                 .attr("y", margin.top/2+ 10)
                 .style("text-anchor", "middle")
                 .text("Median Salaray by Years of Experience");
+
             // Add X axis label:
             linesvg.append("text")
                 .attr("text-anchor", "end")
@@ -469,7 +473,6 @@
                   return rank_x
                 };
                 ranksChartArea.html('');
-                console.log("sorted_languages",sorted_languages)
                 var languages = ranksChartArea.selectAll("circle").select(".iconCircle")
                     .data(sorted_languages)
                     .enter()
@@ -504,7 +507,6 @@
                 var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
                 var edu_items = Object.keys(edu_dict).map(function(key) {return [key, edu_dict[key]]});
                 edu_items.sort(function(first, second) {return second[1] - first[1]});
-                console.log("edu",edu_items);
 
                 var arc = d3.arc()
                             .innerRadius(110)
@@ -526,10 +528,8 @@
                 var color = roleScale(role);
                 var pieroleScale = d3.scaleLog().domain([1,max]).range(["white", color])
                 edu_list.push({"key":"Others","value":others});
-                console.log("list",edu_list);
                 var pie = d3.pie().value(function(d) {return d.value; })
                 var data_ready = pie(edu_list);
-                console.log(data_ready)
                 var arcs = ranksChartArea.selectAll("arc")
                     .data(data_ready)
                     .enter()
@@ -548,6 +548,7 @@
                     .attr("d", arc)
                     .attr("class","arc_path")
                     .on("mouseover", (event, d) => {
+                      console.log(d3.select(this))
                       tooltip.style("left", event.pageX + 10 + "px")
                         .style("top", event.pageY - 25 + "px")
                         .style("display", "inline-block")
@@ -562,16 +563,6 @@
                       tooltip.style("display", "none");
                     });
 
-                // pie chart tooltip
-                var tooltip = d3.select("#container").append("div")
-                  .attr("class", "tooltip")
-                  .style("background-color", "white")
-                  .style("border", "solid")
-                  .style("border-width", "1px")
-                  .style("border-radius", "5px")
-                  .style("padding", "10px")
-                  .style("position", "absolute")
-                  .style("display", "none");
 
                 arcs.append("text")
                     .attr("class","arc_text")
@@ -594,6 +585,18 @@
                    .text(function(d){
                     return d.data.key;
                 });
+
+                // pie chart tooltip
+                var tooltip = d3.select("#container").append("div")
+                  .attr("class", "tooltip")
+                  .style("background-color", "white")
+                  .style("border", "solid")
+                  .style("border-width", "1px")
+                  .style("border-radius", "5px")
+                  .style("padding", "10px")
+                  .style("position", "absolute")
+                  .style("display", "none");
+
 
                 function preloadImage(url)
                 {
@@ -679,8 +682,6 @@
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
-                console.log("data",data)
-                console.log("year_salary_result", year_salary_result)
 
                 var lineGen = d3.line()
                                 .defined(d => !isNaN(d.salary))
@@ -726,6 +727,9 @@
                 for(i=0;i<yearGroupExtent.length;i++) {
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
+                }
+                if (role === 'all'){
+                  console.log(year_salary_result)
                 }
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
@@ -804,17 +808,20 @@
                     } else {
                         index = 5;
                     }
+
                     let d = year_salary_result[index];
                     // From there, it's just a matter of updating positions using our scales like we've done for a while now
                     let xPos = yearGroupScale(d['year_group'])+ yearGroupScale.bandwidth() / 2;
                     let yPos =  salaryScale(d['salary']);
 
                     xMarker.attr("x1",xPos).attr("x2",xPos);
-                    valueMarker2.attr("cx",xPos).attr("cy",yPos);
-                    valueMarker.attr("x",xPos).attr("y",yPos+10);
+
+                    // valueMarker.attr("cx",xPos).attr("cy",yPos);
+                    valueMarker.attr("x",xPos).attr("y",yPos);
                     if (index === 5){
                       valueMarker.attr("x",xPos-40).attr("y",yPos);
                     }
+                    valueMarker2.attr("cx",xPos).attr("cy",yPos);
 
                     let txt = "$" + d['salary']/1000 + "K";
 
@@ -873,7 +880,6 @@
                     .curve(d3.curveMonotoneX)
 
                 var rolecolor = roleScale(role)
-                console.log(rolecolor);
 
                 chartArea.selectAll("#salary-gradient").remove()
                 chartArea.append("linearGradient")
@@ -1038,7 +1044,6 @@
             // draw default bubble plot & pie chart
             updateBubblePlot(surveyResult, 'all');
 
-            console.log(roleScale('all'))
         })
     </script>
 </body>
