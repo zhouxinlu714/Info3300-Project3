@@ -7,13 +7,13 @@
     body{
         font-family: Arial, Helvetica, sans-serif;
         /* background-color: #1f2022; */
-        background-image:  linear-gradient(45deg, 
-            rgba(3, 41, 58, 0.815), 
+        background-image:  linear-gradient(45deg,
+            rgba(3, 41, 58, 0.815),
             rgba(17, 23, 43, 0.877)
             ),url(./icons/background.jpg);
         background-position: center; /* Center the image */
         background-repeat: no-repeat; /* Do not repeat the image */
-        background-size: cover; 
+        background-size: cover;
         margin: 0;
     }
 
@@ -67,6 +67,9 @@
     }
     .arc_text{
         fill:white;
+    }
+    .tooltip {
+      font: 12px Helvetica;
     }
 
 
@@ -139,7 +142,7 @@
         height: 34px;
     }
 
-    .switch input { 
+    .switch input {
         opacity: 0;
         width: 0;
         height: 0;
@@ -197,11 +200,18 @@
         fill: rgb(226, 252, 255);
         font-size: 20px;
     }
+
 </style>
-<body>
+<script type="text/javascript">
+        function zoom() {
+            document.body.style.zoom = "90%"
+        }
+</script>
+<body onload="zoom()">
     <div class="title">
         <h1>US Developer Career Guide</h1>
     </div>
+
     <div class="icon">
         <!-- <img src="./icons/book_icon.svg" style="height: 28px;"> -->
         <img src="./icons/book.png" style="height: 45px;">
@@ -211,8 +221,8 @@
     <p class ="choosetype">Choose your developer type below...</p>
     <div id="mybutton" ></div><br>
     <div id="mybutton2"></div>
-    <div class="container">
-        <svg id = "line" height="600" width="800"></svg>
+    <div id = "container" class="container">
+        <svg id = "line" height="600" width="900" style="margin-left:20px"></svg>
         <svg id = "anno" height="600" width="600"></svg>
     </div>
     <label class="switch">
@@ -241,7 +251,7 @@
                 stylesheet.cssRules[12].style.boxShadow =  "#CCD7EE 0px 6px"
                 stylesheet.cssRules[29].style.color = "black";
                 stylesheet.cssRules[31].style.cssText = "fill: black;font-size: 20px;";
-            } 
+            }
             else {
                 document.getElementById("p1").innerHTML = "Dark Mode"
                 stylesheet.cssRules[0].style.backgroundImage ="linear-gradient(45deg, rgba(3, 41, 58, 0.816), rgba(17, 23, 43, 0.88)), url('./icons/background.jpg')"
@@ -264,8 +274,8 @@
         const annosvg = d3.select("svg#anno");
         const width = linesvg.attr("width");
         const height = linesvg.attr("height");
-        const margin = {top: 70, right: 10, bottom: 60, left: 90};
-        const chartWidth = width - margin.left - margin.right;
+        const margin = {top: 70, right: 60, bottom: 60, left: 90};
+        const chartWidth = width - margin.left-margin.right;
         const chartHeight = height - margin.top - margin.bottom;
         const ranksWidth = annosvg.attr("width");
         const ranksHeight = annosvg.attr("height");
@@ -277,8 +287,7 @@
                         .attr("transform",`translate(${margin.left},${margin.top})`);
         let ranksChartArea = annosvg.append("g").attr("id","ranks")
                         .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
-        // let iconsArea = annosvg.append("g").attr("id","icons")
-        //                 .attr("transform",`translate(${ranksMargin.left},${ranksMargin.top})`);
+
 
         d3.csv("./survey_results_public.csv", d3.autoType).then(data => {
             //import dataset
@@ -380,7 +389,6 @@
             };
 
             var salary_groups = compute_salary_group (surveyResult);
-            console.log("salary_groups", salary_groups);
 
             let leftAxis = d3.axisLeft(salaryScale).tickFormat(function (d) {return "$"+ d/1000 + "K"});
             let leftAxisG = annotations.append("g")
@@ -400,7 +408,7 @@
                 .attr("class", "axisBrown")
                 .attr("transform", `translate(${margin.left},${chartHeight + margin.top})`)
                 .call(bottomAxis);
-            
+
             // Add title
             linesvg.append("text")
                 .attr("class", "chartTitle")
@@ -408,6 +416,7 @@
                 .attr("y", margin.top/2+ 10)
                 .style("text-anchor", "middle")
                 .text("Median Salaray by Years of Experience");
+
             // Add X axis label:
             linesvg.append("text")
                 .attr("text-anchor", "end")
@@ -466,7 +475,6 @@
                   return rank_x
                 };
                 ranksChartArea.html('');
-                console.log("sorted_languages",sorted_languages)
                 var languages = ranksChartArea.selectAll("circle").select(".iconCircle")
                     .data(sorted_languages)
                     .enter()
@@ -501,7 +509,6 @@
                 var ed_sum = Object.keys(edu_dict).reduce((sum,key)=>sum+parseFloat(edu_dict[key]||0),0);
                 var edu_items = Object.keys(edu_dict).map(function(key) {return [key, edu_dict[key]]});
                 edu_items.sort(function(first, second) {return second[1] - first[1]});
-                console.log("edu",edu_items);
 
                 var arc = d3.arc()
                             .innerRadius(110)
@@ -523,21 +530,42 @@
                 var color = roleScale(role);
                 var pieroleScale = d3.scaleLog().domain([1,max]).range(["white", color])
                 edu_list.push({"key":"Others","value":others});
-                console.log("list",edu_list);
                 var pie = d3.pie().value(function(d) {return d.value; })
                 var data_ready = pie(edu_list);
-                console.log(data_ready)
                 var arcs = ranksChartArea.selectAll("arc")
                     .data(data_ready)
                     .enter()
                     .append("g")
                     .attr("transform", "translate(" + 250 + "," + 360 + ")");
 
+                // count total valid edu items
+                var total = 0;
+                for (var i = 0;i<data_ready.length;i++){
+                  total += data_ready[i].data.value;
+                };
+
                 // Appending path
                 arcs.append("path")
                     .attr("fill",d => pieroleScale(d.data.value))
                     .attr("d", arc)
                     .attr("class","arc_path")
+                    .on("mouseover", (event, d) => {
+                      console.log(d3.select(this))
+                      tooltip.style("left", event.pageX + 10 + "px")
+                        .style("top", event.pageY - 25 + "px")
+                        .style("display", "inline-block")
+                        .html(d.data.key + ": " + Math.round(d.data.value/total*100) + "%");
+                    })
+                    .on("mousemove", (event, d) => {
+                      tooltip
+                      .style("left", (event.pageX+10) + "px")
+                      .style("top", (event.pageY-25) + "px")
+                    })
+                    .on("mouseleave", (event, d) => {
+                      tooltip.style("display", "none");
+                    });
+
+
                 arcs.append("text")
                     .attr("class","arc_text")
                     .attr("transform",(d)=>{
@@ -559,6 +587,18 @@
                    .text(function(d){
                     return d.data.key;
                 });
+
+                // pie chart tooltip
+                var tooltip = d3.select("#container").append("div")
+                  .attr("class", "tooltip")
+                  .style("background-color", "white")
+                  .style("border", "solid")
+                  .style("border-width", "1px")
+                  .style("border-radius", "5px")
+                  .style("padding", "10px")
+                  .style("position", "absolute")
+                  .style("display", "none");
+
 
                 function preloadImage(url)
                 {
@@ -644,15 +684,13 @@
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
-                console.log("data",data)
-                console.log("year_salary_result", year_salary_result)
 
                 var lineGen = d3.line()
                                 .defined(d => !isNaN(d.salary))
                                 .x( d => yearGroupScale(d['year_group']))
                                 .y( d => salaryScale(d['salary']) )
                                 .curve(d3.curveMonotoneX);
-                
+
                 // chartArea.append("path")
                 // .attr("class", "area")
                 // .datum(year_salary_result)
@@ -692,6 +730,9 @@
                     let year_group = yearGroupExtent[i];
                     year_salary_result.push({"salary":Math.floor(d3.median(year_salary[year_group])* 100)/100, "year_group":year_group});
                 }
+                if (role === 'all'){
+                  console.log(year_salary_result)
+                }
                 let mouseGroup = chartArea.append("g");
                 let xMarker = mouseGroup.append("line")
                     .attr("id","xMarker")
@@ -719,14 +760,18 @@
                     .attr("stroke-width",2)
                     .attr("r",10)
                     .attr("visibility","hidden");
-                
+
                 let label = mouseGroup.append("text")
                     .attr("id","label")
                     .attr("class","arc_text")
                     .attr("visibility","hidden");
+                let label2 = mouseGroup.append("text")
+                    .attr("id","label2")
+                    .attr("class","arc_textå")
+                    .attr("visibility","hidden");
                 let activeRegion = mouseGroup.append("rect")
                     .attr("id","activeRegion")
-                    .attr("width",chartWidth)
+                    .attr("width",chartWidth+margin.right)
                     .attr("height",chartHeight)
                     .attr("fill","none")
                     .attr("pointer-events","all");
@@ -738,6 +783,7 @@
                     valueMarker.attr("visibility","");
                     valueMarker2.attr("visibility","");
                     label.attr("visibility","");
+                    label2.attr("visibility","");
                 });
                 activeRegion.on("mouseout", function() {
                     // Hide them when mousing out of chart
@@ -745,6 +791,7 @@
                     valueMarker.attr("visibility","hidden");
                     valueMarker2.attr("visibility","hidden");
                     label.attr("visibility","hidden");
+                    label2.attr("visibility","hidden");
                 });
                 activeRegion.on("mousemove", function(evt) {
                     // // Get mouse location
@@ -763,18 +810,35 @@
                     } else {
                         index = 5;
                     }
+
                     let d = year_salary_result[index];
                     // From there, it's just a matter of updating positions using our scales like we've done for a while now
                     let xPos = yearGroupScale(d['year_group'])+ yearGroupScale.bandwidth() / 2;
                     let yPos =  salaryScale(d['salary']);
 
                     xMarker.attr("x1",xPos).attr("x2",xPos);
+
+                    // valueMarker.attr("cx",xPos).attr("cy",yPos);
+                    valueMarker.attr("x",xPos).attr("y",yPos);
+                    if (index === 5){
+                      valueMarker.attr("x",xPos-40).attr("y",yPos);
+                    }
                     valueMarker2.attr("cx",xPos).attr("cy",yPos);
-                    valueMarker.attr("x",xPos).attr("y",yPos+10);
 
                     let txt = "$" + d['salary']/1000 + "K";
 
                     label.text(txt).attr("class","arc_text").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", ".35em");
+                    if (role === 'all'){
+                      label2.text("Median for all: ").attr("class","arc_text").attr("x",xPos+10).attr("y",yPos+2).attr("text-anchor","start").attr("dy", "-1em");
+                    }
+
+                    if (index === 5){
+                      label.text(txt).attr("class","arc_text").attr("x",xPos-10).attr("y",yPos+2).attr("text-anchor","end").attr("dy", ".35em");
+                      if (role === 'all'){
+                        label2.text("Median for all: ").attr("class","arc_text").attr("x",xPos-10).attr("y",yPos+2).attr("text-anchor","end").attr("dy", "-1em");
+                      }
+                    }
+
                     valueMarker.attr("visibility","");
                     valueMarker2.attr("visibility","");
                 });
@@ -818,7 +882,6 @@
                     .curve(d3.curveMonotoneX)
 
                 var rolecolor = roleScale(role)
-                console.log(rolecolor);
 
                 chartArea.selectAll("#salary-gradient").remove()
                 chartArea.append("linearGradient")
@@ -852,7 +915,7 @@
             addLinePlot(embedded, 'embedded');
             addLinePlot(devOps, 'devOps');
             addLinePlot(pm, 'pm');
-            updateHover(pm, 'pm');
+            updateHover(surveyResult, 'all');
 
             var menuDiv = d3.select("div#mybutton");
             var menuDiv2 = d3.select("div#mybutton2");
@@ -865,8 +928,9 @@
                     .on('click', function(){
                         updateLinePlot(surveyResult, 'all');
                         updateBubblePlot(surveyResult, 'all');
+                        updateHover(surveyResult, 'all');
                         chartArea.selectAll(".area").remove()
-                        
+
                     });
             var Button1 = menuDiv.append("button")
                     .style("background-color", roleScale('backend'))
@@ -982,7 +1046,6 @@
             // draw default bubble plot & pie chart
             updateBubblePlot(surveyResult, 'all');
 
-            console.log(roleScale('all'))
         })
     </script>
 </body>
